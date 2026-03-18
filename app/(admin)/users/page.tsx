@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Table,
   TableBody,
@@ -19,6 +20,25 @@ import {
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 20;
+
+function getInitials(email: string | null): string {
+  if (!email) return "?";
+  return email.substring(0, 2).toUpperCase();
+}
+
+function getAvatarColor(id: string): string {
+  const colors = [
+    "bg-blue-100 text-blue-700",
+    "bg-violet-100 text-violet-700",
+    "bg-emerald-100 text-emerald-700",
+    "bg-amber-100 text-amber-700",
+    "bg-rose-100 text-rose-700",
+    "bg-cyan-100 text-cyan-700",
+  ];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
 
 export default function UsersPage() {
   const router = useRouter();
@@ -51,12 +71,14 @@ export default function UsersPage() {
   }, [load]);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-        <p className="text-sm text-muted-foreground">
-          {total > 0 ? `${total} registered users` : "Manage user accounts"}
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {total > 0 ? `${total} registered users` : "Manage user accounts"}
+          </p>
+        </div>
       </div>
 
       <div className="relative max-w-sm">
@@ -73,16 +95,16 @@ export default function UsersPage() {
       </div>
 
       {error && (
-        <div className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <div className="rounded-lg border">
+      <div className="rounded-xl border shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Email</TableHead>
+            <TableRow className="bg-muted/40">
+              <TableHead className="pl-5">User</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Referral</TableHead>
               <TableHead>Telegram</TableHead>
@@ -93,8 +115,13 @@ export default function UsersPage() {
             {loading && users.length === 0
               ? Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-12" /></TableCell>
+                    <TableCell className="pl-5">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="size-8 rounded-full" />
+                        <Skeleton className="h-4 w-36" />
+                      </div>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-5 w-14" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-12" /></TableCell>
@@ -103,21 +130,33 @@ export default function UsersPage() {
               : users.map((u) => (
                   <TableRow
                     key={u.id}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-muted/30 transition-colors"
                     onClick={() => router.push(`/users/${u.id}`)}
                   >
-                    <TableCell className="font-medium">
-                      {u.email ?? (
-                        <span className="text-muted-foreground">No email</span>
-                      )}
+                    <TableCell className="pl-5">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-8">
+                          <AvatarFallback className={`text-xs font-medium ${getAvatarColor(u.id)}`}>
+                            {getInitials(u.email)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">
+                          {u.email ?? (
+                            <span className="text-muted-foreground italic">No email</span>
+                          )}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={u.role === "admin" ? "default" : "secondary"}>
+                      <Badge
+                        variant={u.role === "admin" ? "default" : "secondary"}
+                        className={u.role === "admin" ? "bg-primary/10 text-primary hover:bg-primary/15" : ""}
+                      >
                         {u.role}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <code className="text-xs text-muted-foreground">
+                      <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                         {u.referralCode}
                       </code>
                     </TableCell>
@@ -125,22 +164,25 @@ export default function UsersPage() {
                       {u.telegramId ? (
                         <code className="text-xs">{u.telegramId}</code>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">--</span>
                       )}
                     </TableCell>
                     <TableCell>
                       {u.contactCode ? (
                         <code className="text-xs">{u.contactCode}</code>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">--</span>
                       )}
                     </TableCell>
                   </TableRow>
                 ))}
             {!loading && users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  No users found. Try adjusting your search.
+                <TableCell colSpan={5} className="h-32 text-center">
+                  <div className="text-muted-foreground">
+                    <p className="font-medium">No users found</p>
+                    <p className="mt-1 text-sm">Try adjusting your search query.</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -149,9 +191,9 @@ export default function UsersPage() {
       </div>
 
       {total > PAGE_SIZE && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-2">
           <p className="text-sm text-muted-foreground">
-            {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} of {total}
+            Showing {offset + 1}--{Math.min(offset + PAGE_SIZE, total)} of {total}
           </p>
           <div className="flex gap-2">
             <Button

@@ -13,6 +13,8 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -22,7 +24,11 @@ import {
   Wallet,
   Ticket,
   KeyRound,
+  LogOut,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { clearTokens } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 const overviewItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -42,6 +48,12 @@ const configItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    clearTokens();
+    router.replace("/login");
+  };
 
   const renderItems = (items: typeof overviewItems) =>
     items.map((item) => {
@@ -51,13 +63,11 @@ export function AppSidebar() {
           : pathname.startsWith(item.href);
       return (
         <SidebarMenuItem key={item.href}>
-          <SidebarMenuButton
-            isActive={isActive}
-            render={<Link href={item.href} />}
-            tooltip={item.label}
-          >
-            <item.icon className="size-4" />
-            <span>{item.label}</span>
+          <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+            <Link href={item.href}>
+              <item.icon className="size-4" />
+              <span>{item.label}</span>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       );
@@ -65,16 +75,19 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border px-4 py-3">
-        <Link href="/" className="flex items-center gap-2.5 no-underline">
-          <div className="flex size-7 items-center justify-center rounded-lg bg-foreground text-background text-xs font-bold">
+      <SidebarHeader className="px-4 py-4">
+        <Link href="/" className="flex items-center gap-3 no-underline">
+          <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-sm">
             E
           </div>
-          <span className="text-sm font-semibold tracking-tight">
-            EPN Admin
-          </span>
+          <div>
+            <div className="text-sm font-semibold tracking-tight">EPN Admin</div>
+            <div className="text-[11px] text-muted-foreground">Control Panel</div>
+          </div>
         </Link>
       </SidebarHeader>
+
+      <SidebarSeparator />
 
       <SidebarContent>
         <SidebarGroup>
@@ -98,6 +111,18 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="px-3 pb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-muted-foreground"
+          onClick={handleLogout}
+        >
+          <LogOut className="size-4" />
+          Sign Out
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }

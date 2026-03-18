@@ -19,50 +19,55 @@ export default function DashboardPage() {
   const stats = [
     {
       label: "Total Balance",
-      value: summary ? String(summary.totalBalance ?? "—") : null,
+      value: summary ? String(summary.totalBalance ?? "--") : null,
       icon: TrendingUp,
+      color: "text-blue-600 bg-blue-50",
     },
     {
       label: "Total Wallets",
-      value: summary ? String(summary.totalWallets ?? "—") : null,
+      value: summary ? String(summary.totalWallets ?? "--") : null,
       icon: Wallet,
+      color: "text-violet-600 bg-violet-50",
     },
     {
       label: "Active Users",
-      value: summary ? String(summary.activeUsers ?? "—") : null,
+      value: summary ? String(summary.activeUsers ?? "--") : null,
       icon: Users,
+      color: "text-emerald-600 bg-emerald-50",
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Overview of your service metrics
+        <p className="mt-1 text-sm text-muted-foreground">
+          Here is what is happening with your service today.
         </p>
       </div>
 
       {error && (
-        <div className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card key={stat.label} className="shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.label}
               </CardTitle>
-              <stat.icon className="size-4 text-muted-foreground" />
+              <div className={`rounded-lg p-2 ${stat.color}`}>
+                <stat.icon className="size-4" />
+              </div>
             </CardHeader>
             <CardContent>
               {stat.value !== null ? (
-                <div className="text-2xl font-bold">{stat.value}</div>
+                <div className="text-3xl font-bold tracking-tight">{stat.value}</div>
               ) : (
-                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-9 w-24" />
               )}
             </CardContent>
           </Card>

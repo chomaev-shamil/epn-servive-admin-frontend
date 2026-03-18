@@ -22,8 +22,8 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-muted-foreground text-sm">Loading...</div>
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-muted-foreground text-sm animate-pulse">Loading...</div>
       </div>
     );
   }
@@ -32,12 +32,12 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 !h-4" />
-          <span className="text-sm text-muted-foreground">Admin Panel</span>
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-card/50 px-6">
+          <SidebarTrigger className="-ml-2" />
+          <Separator orientation="vertical" className="!h-5" />
+          <span className="text-sm text-muted-foreground font-medium">Admin Panel</span>
         </header>
-        <div className="flex-1 p-6">{children}</div>
+        <div className="flex-1 p-8">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
