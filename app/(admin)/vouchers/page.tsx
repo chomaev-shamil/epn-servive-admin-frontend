@@ -3,6 +3,18 @@
 import { useEffect, useState, useCallback } from "react";
 import { listVouchers, deleteVoucher } from "@/lib/api";
 import type { AdminVoucherResponse } from "@/types/admin";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 
 const PAGE_SIZE = 20;
 
@@ -41,127 +53,133 @@ export default function VouchersPage() {
   };
 
   return (
-    <>
-      <div className="page-header">
-        <div className="page-header__left">
-          <h1 className="page-title">Vouchers</h1>
-          <p className="page-subtitle">
-            {total > 0 ? `${total} vouchers` : "Manage promotional vouchers"}
-          </p>
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Vouchers</h1>
+        <p className="text-sm text-muted-foreground">
+          {total > 0 ? `${total} vouchers` : "Manage promotional vouchers"}
+        </p>
       </div>
 
-      {error && <div className="alert-danger">{error}</div>}
+      {error && (
+        <div className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
-      <div className="table-wrapper">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Amount</th>
-              <th>Usage</th>
-              <th>Status</th>
-              <th>Expires</th>
-              <th style={{ width: 80 }}></th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Code</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Usage</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Expires</TableHead>
+              <TableHead className="w-16" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {loading && vouchers.length === 0
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <tr key={i} style={{ cursor: "default" }}>
-                    <td><div className="skeleton" style={{ height: 14, width: 96 }} /></td>
-                    <td><div className="skeleton" style={{ height: 14, width: 48 }} /></td>
-                    <td><div className="skeleton" style={{ height: 14, width: 40 }} /></td>
-                    <td><div className="skeleton" style={{ height: 14, width: 56 }} /></td>
-                    <td><div className="skeleton" style={{ height: 14, width: 72 }} /></td>
-                    <td></td>
-                  </tr>
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell />
+                  </TableRow>
                 ))
               : vouchers.map((v) => (
-                  <tr key={v.id ?? v.code} style={{ cursor: "default" }}>
-                    <td className="table-cell-mono" style={{ fontWeight: 500 }}>
-                      {v.code}
-                    </td>
-                    <td>
-                      <span style={{ fontWeight: 600 }}>{v.amount}</span>
-                      <span style={{ color: "var(--text-tertiary)", marginLeft: 2, fontSize: "0.75rem" }}>
+                  <TableRow key={v.id ?? v.code}>
+                    <TableCell>
+                      <code className="text-xs font-medium">{v.code}</code>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-semibold">{v.amount}</span>
+                      <span className="ml-1 text-xs text-muted-foreground">
                         RUB
                       </span>
-                    </td>
-                    <td className="table-cell-mono">
-                      {v.used_count}
-                      <span style={{ color: "var(--text-tertiary)" }}>/{v.max_uses}</span>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          v.is_active ? "badge--active" : "badge--inactive"
-                        }`}
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs text-muted-foreground">
+                        {v.used_count}/{v.max_uses}
+                      </code>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={v.is_active ? "default" : "secondary"}
+                        className={
+                          v.is_active
+                            ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                            : ""
+                        }
                       >
-                        <span className="badge__dot" />
                         {v.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td>
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       {v.expires_at ? (
-                        <span className="table-cell-mono">
+                        <span className="text-sm text-muted-foreground">
                           {new Date(v.expires_at).toLocaleDateString()}
                         </span>
                       ) : (
-                        <span className="table-cell-muted">No expiry</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
-                    </td>
-                    <td>
+                    </TableCell>
+                    <TableCell>
                       {v.id && (
-                        <button
-                          className="btn-danger btn-sm"
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-muted-foreground hover:text-destructive"
                           onClick={() => handleDelete(v.id!)}
                         >
-                          Delete
-                        </button>
+                          <Trash2 className="size-4" />
+                        </Button>
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
             {!loading && vouchers.length === 0 && (
-              <tr style={{ cursor: "default" }}>
-                <td colSpan={6}>
-                  <div className="empty-state">
-                    <div className="empty-state__title">No vouchers yet</div>
-                    <div className="empty-state__text">
-                      Create your first promotional voucher
-                    </div>
-                  </div>
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  No vouchers yet
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {total > PAGE_SIZE && (
-        <div className="pagination">
-          <span className="pagination__info">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
             {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} of {total}
-          </span>
-          <div className="pagination__controls">
-            <button
-              className="btn-secondary btn-sm"
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
               disabled={offset === 0}
               onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
             >
+              <ChevronLeft className="mr-1 size-4" />
               Previous
-            </button>
-            <button
-              className="btn-secondary btn-sm"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={offset + PAGE_SIZE >= total}
               onClick={() => setOffset(offset + PAGE_SIZE)}
             >
               Next
-            </button>
+              <ChevronRight className="ml-1 size-4" />
+            </Button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

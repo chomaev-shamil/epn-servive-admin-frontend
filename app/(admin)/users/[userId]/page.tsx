@@ -5,6 +5,19 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getUser } from "@/lib/api";
 import type { AdminUserResponse } from "@/types/admin";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { ArrowLeft } from "lucide-react";
 
 const FIELD_LABELS: Record<string, string> = {
   id: "User ID",
@@ -34,79 +47,90 @@ export default function UserDetailPage() {
       .catch((e) => setError(e.message));
   }, [userId]);
 
-  if (error) {
-    return <div className="alert-danger">{error}</div>;
-  }
-
   return (
-    <>
-      <div className="page-breadcrumb">
-        <Link href="/users">Users</Link>
-        <span className="page-breadcrumb__sep">/</span>
-        <span>{user?.email ?? userId}</span>
-      </div>
+    <div className="space-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/users" />}>
+              Users
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{user?.email ?? userId}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
-      <div className="page-header">
-        <div className="page-header__left">
-          <h1 className="page-title">
-            {user ? (user.email ?? "User") : (
-              <div className="skeleton" style={{ height: 24, width: 200 }} />
-            )}
-          </h1>
-          {user && (
-            <p className="page-subtitle">
-              <span
-                className={`badge ${user.role === "admin" ? "badge--warning" : "badge--info"}`}
-              >
-                <span className="badge__dot" />
-                {user.role}
-              </span>
-            </p>
-          )}
-        </div>
-        <button className="btn-secondary btn-icon" onClick={() => router.back()}>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M10 3L5 8l5 5" />
-          </svg>
-          Back
-        </button>
-      </div>
-
-      {user ? (
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <div className="detail-grid">
-            {Object.entries(user).map(([key, value]) => (
-              <div className="detail-row" key={key}>
-                <div className="detail-row__label">
-                  {FIELD_LABELS[key] ?? key}
-                </div>
-                <div
-                  className={`detail-row__value${
-                    ["id", "referralCode", "referrerCode", "telegramId", "appleId", "contactCode"].includes(key)
-                      ? " detail-row__value--mono"
-                      : ""
-                  }`}
-                >
-                  {value === null || value === undefined ? (
-                    <span style={{ color: "var(--text-tertiary)" }}>—</span>
-                  ) : (
-                    String(value)
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ padding: "0.75rem 1rem", borderBottom: "1px solid var(--border-subtle)" }}>
-              <div className="skeleton" style={{ height: 10, width: 80, marginBottom: 8 }} />
-              <div className="skeleton" style={{ height: 14, width: "60%" }} />
-            </div>
-          ))}
+      {error && (
+        <div className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {error}
         </div>
       )}
-    </>
+
+      <div className="flex items-center justify-between">
+        <div>
+          {user ? (
+            <>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {user.email ?? "User"}
+              </h1>
+              <div className="mt-1">
+                <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                  {user.role}
+                </Badge>
+              </div>
+            </>
+          ) : (
+            <>
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="mt-2 h-5 w-16" />
+            </>
+          )}
+        </div>
+        <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <ArrowLeft className="mr-1.5 size-4" />
+          Back
+        </Button>
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          {user ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2">
+              {Object.entries(user).map(([key, value]) => (
+                <div
+                  key={key}
+                  className="border-b px-4 py-3 last:border-b-0 sm:[&:nth-last-child(-n+2)]:border-b-0"
+                >
+                  <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    {FIELD_LABELS[key] ?? key}
+                  </div>
+                  <div className="mt-1 text-sm">
+                    {value === null || value === undefined ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : ["id", "referralCode", "referrerCode", "telegramId", "appleId", "contactCode"].includes(key) ? (
+                      <code className="text-xs">{String(value)}</code>
+                    ) : (
+                      String(value)
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-0">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="border-b px-4 py-3">
+                  <Skeleton className="mb-1.5 h-3 w-20" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -4,6 +4,19 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { listUsers } from "@/lib/api";
 import type { AdminUserResponse } from "@/types/admin";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 20;
 
@@ -38,127 +51,130 @@ export default function UsersPage() {
   }, [load]);
 
   return (
-    <>
-      <div className="page-header">
-        <div className="page-header__left">
-          <h1 className="page-title">Users</h1>
-          <p className="page-subtitle">
-            {total > 0 ? `${total} registered users` : "Manage user accounts"}
-          </p>
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+        <p className="text-sm text-muted-foreground">
+          {total > 0 ? `${total} registered users` : "Manage user accounts"}
+        </p>
       </div>
 
-      <div className="search-bar">
-        <div className="search-input-wrap">
-          <svg className="search-input-wrap__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <circle cx="7" cy="7" r="4.5" />
-            <path d="M10.5 10.5L14 14" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search by email or ID..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setOffset(0);
-            }}
-          />
-        </div>
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search by email or ID..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setOffset(0);
+          }}
+          className="pl-9"
+        />
       </div>
 
-      {error && <div className="alert-danger">{error}</div>}
+      {error && (
+        <div className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
-      <div className="table-wrapper">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Referral</th>
-              <th>Telegram</th>
-              <th>Contact</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Referral</TableHead>
+              <TableHead>Telegram</TableHead>
+              <TableHead>Contact</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {loading && users.length === 0
               ? Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} style={{ cursor: "default" }}>
-                    <td><div className="skeleton" style={{ height: 14, width: "70%" }} /></td>
-                    <td><div className="skeleton" style={{ height: 14, width: 48 }} /></td>
-                    <td><div className="skeleton" style={{ height: 14, width: 72 }} /></td>
-                    <td><div className="skeleton" style={{ height: 14, width: 56 }} /></td>
-                    <td><div className="skeleton" style={{ height: 14, width: 40 }} /></td>
-                  </tr>
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-12" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                  </TableRow>
                 ))
               : users.map((u) => (
-                  <tr key={u.id} onClick={() => router.push(`/users/${u.id}`)}>
-                    <td>{u.email ?? <span className="table-cell-muted">No email</span>}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          u.role === "admin" ? "badge--warning" : "badge--info"
-                        }`}
-                      >
-                        <span className="badge__dot" />
+                  <TableRow
+                    key={u.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/users/${u.id}`)}
+                  >
+                    <TableCell className="font-medium">
+                      {u.email ?? (
+                        <span className="text-muted-foreground">No email</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={u.role === "admin" ? "default" : "secondary"}>
                         {u.role}
-                      </span>
-                    </td>
-                    <td className="table-cell-mono">{u.referralCode}</td>
-                    <td>
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs text-muted-foreground">
+                        {u.referralCode}
+                      </code>
+                    </TableCell>
+                    <TableCell>
                       {u.telegramId ? (
-                        <span className="table-cell-mono">{u.telegramId}</span>
+                        <code className="text-xs">{u.telegramId}</code>
                       ) : (
-                        <span className="table-cell-muted">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
-                    </td>
-                    <td>
+                    </TableCell>
+                    <TableCell>
                       {u.contactCode ? (
-                        <span className="table-cell-mono">{u.contactCode}</span>
+                        <code className="text-xs">{u.contactCode}</code>
                       ) : (
-                        <span className="table-cell-muted">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
             {!loading && users.length === 0 && (
-              <tr style={{ cursor: "default" }}>
-                <td colSpan={5}>
-                  <div className="empty-state">
-                    <div className="empty-state__title">No users found</div>
-                    <div className="empty-state__text">
-                      Try adjusting your search query
-                    </div>
-                  </div>
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  No users found. Try adjusting your search.
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {total > PAGE_SIZE && (
-        <div className="pagination">
-          <span className="pagination__info">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
             {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} of {total}
-          </span>
-          <div className="pagination__controls">
-            <button
-              className="btn-secondary btn-sm"
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
               disabled={offset === 0}
               onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
             >
+              <ChevronLeft className="mr-1 size-4" />
               Previous
-            </button>
-            <button
-              className="btn-secondary btn-sm"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               disabled={offset + PAGE_SIZE >= total}
               onClick={() => setOffset(offset + PAGE_SIZE)}
             >
               Next
-            </button>
+              <ChevronRight className="ml-1 size-4" />
+            </Button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

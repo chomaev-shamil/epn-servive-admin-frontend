@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { requestOtp, loginOtp } from "@/lib/api";
 import { setTokens } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,66 +46,74 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-card__header">
-          <div className="login-card__logo-mark">E</div>
-          <h1 className="login-card__title">EPN Admin</h1>
-          <p className="login-card__subtitle">
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-xl bg-foreground text-background text-sm font-bold">
+            E
+          </div>
+          <CardTitle className="text-xl">EPN Admin</CardTitle>
+          <CardDescription>
             {step === "email"
               ? "Sign in to your admin account"
               : "Enter the verification code"}
-          </p>
-        </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {step === "email" ? (
+            <form onSubmit={handleRequestOtp} className="space-y-3">
+              <Input
+                type="email"
+                placeholder="admin@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+              />
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Sending..." : "Get Verification Code"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-3">
+              <p className="text-center text-sm text-muted-foreground">
+                Code sent to{" "}
+                <span className="font-medium text-foreground">{email}</span>
+              </p>
+              <Input
+                type="text"
+                placeholder="000000"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+                autoFocus
+                className="text-center font-mono tracking-widest"
+              />
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Verifying..." : "Sign In"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setStep("email");
+                  setCode("");
+                  setError("");
+                }}
+              >
+                Use different email
+              </Button>
+            </form>
+          )}
 
-        {step === "email" ? (
-          <form onSubmit={handleRequestOtp} className="login-card__form">
-            <input
-              type="email"
-              placeholder="admin@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoFocus
-            />
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? "Sending..." : "Get Verification Code"}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleLogin} className="login-card__form">
-            <p className="login-card__hint" style={{ marginTop: 0, marginBottom: "0.25rem" }}>
-              Code sent to <strong style={{ color: "var(--text)" }}>{email}</strong>
-            </p>
-            <input
-              type="text"
-              placeholder="000000"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              required
-              autoFocus
-              style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.15em", textAlign: "center" }}
-            />
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? "Verifying..." : "Sign In"}
-            </button>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => {
-                setStep("email");
-                setCode("");
-                setError("");
-              }}
-              style={{ alignSelf: "center" }}
-            >
-              Use different email
-            </button>
-          </form>
-        )}
-
-        {error && <div className="alert-danger" style={{ marginTop: "0.75rem" }}>{error}</div>}
-      </div>
+          {error && (
+            <div className="mt-3 rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

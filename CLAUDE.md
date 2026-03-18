@@ -25,13 +25,15 @@ npm audit                   # Check for known vulnerabilities
 
 ## Architecture
 
-**Stack:** Next.js 14 (App Router) + TypeScript. Pure client-side app — all pages use `"use client"`. No server-side data fetching.
+**Stack:** Next.js 15 (App Router) + TypeScript + Tailwind CSS v4 + shadcn/ui. Pure client-side app — all pages use `"use client"`. No server-side data fetching.
+
+**UI framework:** shadcn/ui components in `components/ui/`. Add new components via `npx shadcn@latest add <name>`. Components use `@base-ui/react` render pattern (v4 style) — use `render={<Link />}` instead of `asChild`. Icons from `lucide-react`.
 
 **Auth:** JWT tokens stored in `localStorage` via `lib/auth.ts` (`epn_admin_access_token`, `epn_admin_refresh_token`). Login via email OTP at `/login`. Auth guard is `AdminGuard` — checks for token on mount, redirects to `/login` if absent.
 
 **API layer:** All backend calls go through `lib/api.ts` which wraps `fetch` with auth headers. Backend URL from `env.backendUrl` (`NEXT_PUBLIC_BACKEND_URL`). Always import env vars via `import { env } from "@/lib/env"`, never from `process.env` directly.
 
-**Layout:** Admin pages use a route group `(admin)` with a sidebar layout (`AdminGuard` + `Sidebar`). The `/login` page sits outside this group (no sidebar).
+**Layout:** Admin pages use a route group `(admin)` with shadcn `SidebarProvider` layout (`AdminGuard` + `AppSidebar`). The `/login` page sits outside this group (no sidebar).
 
 **Route structure (`app/`):**
 - `/` — dashboard (wallet stats)
@@ -49,7 +51,7 @@ npm audit                   # Check for known vulnerabilities
 
 **Path alias:** `@/` maps to the repo root (configured in `tsconfig.json`).
 
-**Styling:** Custom CSS with CSS variables in `globals.css`. Dark theme. Admin-specific classes: `.admin-layout`, `.admin-sidebar`, `.admin-table`, `.stat-card`, `.badge`, `.pagination`. No CSS framework.
+**Styling:** Tailwind CSS v4 with CSS variables in `globals.css`. Light theme. shadcn/ui config in `components.json` (style: base-nova).
 
 **Environment setup:** Copy `.env.example` to `.env.local`. Only `NEXT_PUBLIC_BACKEND_URL` is required.
 
@@ -59,5 +61,4 @@ This project mirrors the architecture of the sibling `epn-frontend` project:
 - Same `fetchApi` wrapper pattern in `lib/api.ts`
 - Same `lib/auth.ts` token management (different localStorage keys to avoid collisions)
 - Same `lib/env.ts` pattern for environment variables
-- Same Next.js 14 App Router + `"use client"` everywhere approach
 - Same Docker/standalone build pipeline
