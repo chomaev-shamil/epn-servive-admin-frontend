@@ -6,6 +6,7 @@ import { getAccessToken } from "@/lib/auth";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "./AppSidebar";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -23,7 +24,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   if (!ready) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="text-muted-foreground text-sm animate-pulse">Loading...</div>
+        <div className="text-muted-foreground text-sm animate-pulse">Загрузка...</div>
       </div>
     );
   }
@@ -35,7 +36,10 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-card/50 px-6">
           <SidebarTrigger className="-ml-2" />
           <Separator orientation="vertical" className="!h-5" />
-          <span className="text-sm text-muted-foreground font-medium">Admin Panel</span>
+          <span className="text-sm text-muted-foreground font-medium">Панель администратора</span>
+          <div className="ml-auto">
+            <ThemeSwitcher />
+          </div>
         </header>
         <div className="flex-1 p-8">{children}</div>
       </SidebarInset>

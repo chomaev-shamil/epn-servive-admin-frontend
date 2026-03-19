@@ -16,6 +16,11 @@ import type {
   AdminVoucherResponse,
   AdminApiKeysListResponse,
   AdminApiKeyResponse,
+  AdminUserTrafficPackagesListResponse,
+  AdminTrafficPackagesListResponse,
+  AdminServiceResponse,
+  AdminPaymentsListResponse,
+  AdminWalletTransactionsListResponse,
   LoginResponse,
   OtpRequestResponse,
 } from "@/types/admin";
@@ -146,21 +151,64 @@ export async function updateUser(
   });
 }
 
+export async function getUserWallet(
+  userId: string,
+  token?: string | null
+): Promise<AdminWalletResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi(`/api/admin/users/${encodeURIComponent(userId)}/wallet`, {
+    method: "GET",
+    token: t,
+  });
+}
+
+export async function depositToWallet(
+  walletId: string,
+  body: { amount: number | string; description?: string },
+  token?: string | null
+): Promise<AdminWalletResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi(`/api/admin/wallets/${encodeURIComponent(walletId)}/deposit`, {
+    method: "POST",
+    body: JSON.stringify(body),
+    token: t,
+  });
+}
+
 // ── Devices ──
 
 export async function listDevices(
-  params?: { limit?: number; offset?: number },
+  params?: { limit?: number; offset?: number; userEmail?: string; userId?: string },
   token?: string | null
 ): Promise<AdminDevicesListResponse> {
   const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
   const search = new URLSearchParams();
   if (params?.limit != null) search.set("limit", String(params.limit));
   if (params?.offset != null) search.set("offset", String(params.offset));
+  if (params?.userEmail) search.set("userEmail", params.userEmail);
+  if (params?.userId) search.set("userId", params.userId);
   const qs = search.toString();
   return fetchApi(`/api/admin/devices${qs ? `?${qs}` : ""}`, {
     method: "GET",
     token: t,
   });
+}
+
+export async function getUserTrafficPackages(
+  userId: string,
+  params?: { status?: string; limit?: number; offset?: number },
+  token?: string | null
+): Promise<AdminUserTrafficPackagesListResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.status) search.set("status", params.status);
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  if (params?.offset != null) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  return fetchApi(
+    `/api/admin/users/${encodeURIComponent(userId)}/traffic-packages${qs ? `?${qs}` : ""}`,
+    { method: "GET", token: t }
+  );
 }
 
 export async function getDevice(
@@ -464,6 +512,106 @@ export async function toggleApiKey(
     `/api/admin/api-keys/${encodeURIComponent(apiKeyId)}/toggle`,
     { method: "PATCH", token: t }
   );
+}
+
+// ── Service ──
+
+export async function getService(
+  token?: string | null
+): Promise<AdminServiceResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/admin/service", { method: "GET", token: t });
+}
+
+export async function updateService(
+  body: { name?: string | null; domain?: string | null; frontendUrl?: string | null },
+  token?: string | null
+): Promise<AdminServiceResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/admin/service", {
+    method: "PATCH",
+    body: JSON.stringify(body),
+    token: t,
+  });
+}
+
+// ── Payments ──
+
+export async function listPayments(
+  params?: { userId?: string; status?: string; provider?: string; fromDate?: string; toDate?: string; limit?: number; offset?: number },
+  token?: string | null
+): Promise<AdminPaymentsListResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.userId) search.set("userId", params.userId);
+  if (params?.status) search.set("status", params.status);
+  if (params?.provider) search.set("provider", params.provider);
+  if (params?.fromDate) search.set("fromDate", params.fromDate);
+  if (params?.toDate) search.set("toDate", params.toDate);
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  if (params?.offset != null) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  return fetchApi(`/api/admin/payments${qs ? `?${qs}` : ""}`, { method: "GET", token: t });
+}
+
+// ── Wallet Transactions ──
+
+export async function listWalletTransactions(
+  params?: { userId?: string; type?: string; source?: string; fromDate?: string; toDate?: string; limit?: number; offset?: number },
+  token?: string | null
+): Promise<AdminWalletTransactionsListResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.userId) search.set("userId", params.userId);
+  if (params?.type) search.set("type", params.type);
+  if (params?.source) search.set("source", params.source);
+  if (params?.fromDate) search.set("fromDate", params.fromDate);
+  if (params?.toDate) search.set("toDate", params.toDate);
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  if (params?.offset != null) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  return fetchApi(`/api/admin/wallet-transactions${qs ? `?${qs}` : ""}`, { method: "GET", token: t });
+}
+
+// ── Traffic Packages (catalog) ──
+
+export async function listTrafficPackages(
+  params?: { isActive?: boolean; limit?: number; offset?: number },
+  token?: string | null
+): Promise<AdminTrafficPackagesListResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.isActive != null) search.set("isActive", String(params.isActive));
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  if (params?.offset != null) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  return fetchApi(`/api/admin/traffic-packages${qs ? `?${qs}` : ""}`, {
+    method: "GET",
+    token: t,
+  });
+}
+
+export async function purchasePackageForUser(
+  packageId: string,
+  userId: string,
+  token?: string | null
+): Promise<void> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const headers: HeadersInit = {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  };
+  if (t) {
+    (headers as Record<string, string>)["Authorization"] = `Bearer ${t}`;
+  }
+  const res = await fetch(
+    `${baseUrl()}/api/admin/traffic-packages/${encodeURIComponent(packageId)}/purchase`,
+    { method: "POST", headers, body: JSON.stringify({ user_id: userId }) }
+  );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
 }
 
 // ── Remnawave ──

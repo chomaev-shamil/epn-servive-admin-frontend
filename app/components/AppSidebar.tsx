@@ -1,128 +1,152 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
+  SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
   Users,
   Monitor,
-  CreditCard,
-  Wallet,
   Ticket,
   KeyRound,
   LogOut,
+  Receipt,
+  ArrowLeftRight,
+  Settings,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { clearTokens } from "@/lib/auth";
-import { useRouter } from "next/navigation";
 
 const overviewItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Главная", icon: LayoutDashboard },
 ];
 
 const managementItems = [
-  { href: "/users", label: "Users", icon: Users },
-  { href: "/devices", label: "Devices", icon: Monitor },
-  { href: "/subscriptions", label: "Subscriptions", icon: CreditCard },
-  { href: "/wallets", label: "Wallets", icon: Wallet },
+  { href: "/users", label: "Пользователи", icon: Users },
+  { href: "/devices", label: "Устройства", icon: Monitor },
+  { href: "/payments", label: "Платежи", icon: Receipt },
+  { href: "/transactions", label: "Транзакции", icon: ArrowLeftRight },
 ];
 
 const configItems = [
-  { href: "/vouchers", label: "Vouchers", icon: Ticket },
-  { href: "/api-keys", label: "API Keys", icon: KeyRound },
+  { href: "/service", label: "Сервис", icon: Settings },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
   const handleLogout = () => {
     clearTokens();
     router.replace("/login");
   };
 
-  const renderItems = (items: typeof overviewItems) =>
-    items.map((item) => {
-      const isActive =
-        item.href === "/"
-          ? pathname === "/"
-          : pathname.startsWith(item.href);
-      return (
-        <SidebarMenuItem key={item.href}>
-          <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-            <Link href={item.href}>
-              <item.icon className="size-4" />
-              <span>{item.label}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      );
-    });
-
   return (
     <Sidebar>
-      <SidebarHeader className="px-4 py-4">
-        <Link href="/" className="flex items-center gap-3 no-underline">
-          <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-sm">
-            E
-          </div>
-          <div>
-            <div className="text-sm font-semibold tracking-tight">EPN Admin</div>
-            <div className="text-[11px] text-muted-foreground">Control Panel</div>
-          </div>
-        </Link>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/">
+                <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+                  E
+                </div>
+                <div className="flex flex-col gap-0.5 leading-none">
+                  <span className="font-semibold">EPN Admin</span>
+                  <span className="text-xs text-muted-foreground">Панель управления</span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
       <SidebarSeparator />
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
+          <SidebarGroupLabel>Обзор</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{renderItems(overviewItems)}</SidebarMenu>
+            <SidebarMenu>
+              {overviewItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupLabel>Управление</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{renderItems(managementItems)}</SidebarMenu>
+            <SidebarMenu>
+              {managementItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Configuration</SidebarGroupLabel>
+          <SidebarGroupLabel>Настройки</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>{renderItems(configItems)}</SidebarMenu>
+            <SidebarMenu>
+              {configItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
       </SidebarContent>
 
-      <SidebarFooter className="px-3 pb-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 text-muted-foreground"
-          onClick={handleLogout}
-        >
-          <LogOut className="size-4" />
-          Sign Out
-        </Button>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleLogout} tooltip="Выйти">
+              <LogOut />
+              <span>Выйти</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
+
+      <SidebarRail />
     </Sidebar>
   );
 }

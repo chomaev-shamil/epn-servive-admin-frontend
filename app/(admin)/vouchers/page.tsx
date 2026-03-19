@@ -7,12 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 
@@ -43,7 +38,7 @@ export default function VouchersPage() {
   }, [load]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this voucher?")) return;
+    if (!confirm("Удалить этот ваучер?")) return;
     try {
       await deleteVoucher(id);
       load();
@@ -55,9 +50,9 @@ export default function VouchersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Vouchers</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Ваучеры</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {total > 0 ? `${total} vouchers total` : "Manage promotional vouchers"}
+          {total > 0 ? `Всего ${total}` : "Управление промо-ваучерами"}
         </p>
       </div>
 
@@ -71,11 +66,11 @@ export default function VouchersPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead className="pl-5">Code</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Usage</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Expires</TableHead>
+              <TableHead className="pl-5">Код</TableHead>
+              <TableHead>Сумма</TableHead>
+              <TableHead>Использование</TableHead>
+              <TableHead>Статус</TableHead>
+              <TableHead>Истекает</TableHead>
               <TableHead className="w-14" />
             </TableRow>
           </TableHeader>
@@ -126,16 +121,16 @@ export default function VouchersPage() {
                             : ""
                         }
                       >
-                        {v.is_active ? "Active" : "Inactive"}
+                        {v.is_active ? "Активен" : "Неактивен"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       {v.expires_at ? (
                         <span className="text-sm text-muted-foreground">
-                          {new Date(v.expires_at).toLocaleDateString()}
+                          {new Date(v.expires_at).toLocaleDateString("ru-RU")}
                         </span>
                       ) : (
-                        <span className="text-sm text-muted-foreground">No expiry</span>
+                        <span className="text-sm text-muted-foreground">Бессрочный</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -156,8 +151,8 @@ export default function VouchersPage() {
               <TableRow>
                 <TableCell colSpan={6} className="h-32 text-center">
                   <div className="text-muted-foreground">
-                    <p className="font-medium">No vouchers yet</p>
-                    <p className="mt-1 text-sm">Create your first promotional voucher.</p>
+                    <p className="font-medium">Ваучеров пока нет</p>
+                    <p className="mt-1 text-sm">Создайте первый промо-ваучер.</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -169,7 +164,7 @@ export default function VouchersPage() {
       {total > PAGE_SIZE && (
         <div className="flex items-center justify-between pt-2">
           <p className="text-sm text-muted-foreground">
-            Showing {offset + 1}--{Math.min(offset + PAGE_SIZE, total)} of {total}
+            {offset + 1}--{Math.min(offset + PAGE_SIZE, total)} из {total}
           </p>
           <div className="flex gap-2">
             <Button
@@ -179,7 +174,7 @@ export default function VouchersPage() {
               onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
             >
               <ChevronLeft className="mr-1 size-4" />
-              Previous
+              Назад
             </Button>
             <Button
               variant="outline"
@@ -187,7 +182,7 @@ export default function VouchersPage() {
               disabled={offset + PAGE_SIZE >= total}
               onClick={() => setOffset(offset + PAGE_SIZE)}
             >
-              Next
+              Вперёд
               <ChevronRight className="ml-1 size-4" />
             </Button>
           </div>

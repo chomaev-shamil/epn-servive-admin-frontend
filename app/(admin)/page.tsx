@@ -18,19 +18,19 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      label: "Total Balance",
+      label: "Общий баланс",
       value: summary ? String(summary.totalBalance ?? "--") : null,
       icon: TrendingUp,
       color: "text-blue-600 bg-blue-50",
     },
     {
-      label: "Total Wallets",
+      label: "Всего кошельков",
       value: summary ? String(summary.totalWallets ?? "--") : null,
       icon: Wallet,
       color: "text-violet-600 bg-violet-50",
     },
     {
-      label: "Active Users",
+      label: "Активные пользователи",
       value: summary ? String(summary.activeUsers ?? "--") : null,
       icon: Users,
       color: "text-emerald-600 bg-emerald-50",
@@ -40,9 +40,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Главная</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Here is what is happening with your service today.
+          Обзор основных показателей сервиса
         </p>
       </div>
 

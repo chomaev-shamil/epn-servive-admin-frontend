@@ -10,12 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -72,19 +67,17 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {total > 0 ? `${total} registered users` : "Manage user accounts"}
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Пользователи</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {total > 0 ? `${total} зарегистрированных` : "Управление аккаунтами"}
+        </p>
       </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search by email or ID..."
+          placeholder="Поиск по email или ID..."
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -104,11 +97,11 @@ export default function UsersPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead className="pl-5">User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Referral</TableHead>
+              <TableHead className="pl-5">Пользователь</TableHead>
+              <TableHead>Роль</TableHead>
+              <TableHead>Реферальный код</TableHead>
               <TableHead>Telegram</TableHead>
-              <TableHead>Contact</TableHead>
+              <TableHead>Контакт</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -136,13 +129,13 @@ export default function UsersPage() {
                     <TableCell className="pl-5">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">
-                          <AvatarFallback className={`text-xs font-medium ${getAvatarColor(u.id)}`}>
+                          <AvatarFallback className={`text-xs font-medium ${getAvatarColor(u.id ?? "")}`}>
                             {getInitials(u.email)}
                           </AvatarFallback>
                         </Avatar>
                         <span className="font-medium">
                           {u.email ?? (
-                            <span className="text-muted-foreground italic">No email</span>
+                            <span className="text-muted-foreground italic">Нет email</span>
                           )}
                         </span>
                       </div>
@@ -152,24 +145,24 @@ export default function UsersPage() {
                         variant={u.role === "admin" ? "default" : "secondary"}
                         className={u.role === "admin" ? "bg-primary/10 text-primary hover:bg-primary/15" : ""}
                       >
-                        {u.role}
+                        {u.role === "admin" ? "Админ" : "Пользователь"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                        {u.referralCode}
+                        {u.referral_code}
                       </code>
                     </TableCell>
                     <TableCell>
-                      {u.telegramId ? (
-                        <code className="text-xs">{u.telegramId}</code>
+                      {u.telegram_id ? (
+                        <code className="text-xs">{u.telegram_id}</code>
                       ) : (
                         <span className="text-muted-foreground">--</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      {u.contactCode ? (
-                        <code className="text-xs">{u.contactCode}</code>
+                      {u.contact_code ? (
+                        <code className="text-xs">{u.contact_code}</code>
                       ) : (
                         <span className="text-muted-foreground">--</span>
                       )}
@@ -180,8 +173,8 @@ export default function UsersPage() {
               <TableRow>
                 <TableCell colSpan={5} className="h-32 text-center">
                   <div className="text-muted-foreground">
-                    <p className="font-medium">No users found</p>
-                    <p className="mt-1 text-sm">Try adjusting your search query.</p>
+                    <p className="font-medium">Ничего не найдено</p>
+                    <p className="mt-1 text-sm">Попробуйте изменить поисковый запрос.</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -193,7 +186,7 @@ export default function UsersPage() {
       {total > PAGE_SIZE && (
         <div className="flex items-center justify-between pt-2">
           <p className="text-sm text-muted-foreground">
-            Showing {offset + 1}--{Math.min(offset + PAGE_SIZE, total)} of {total}
+            {offset + 1}--{Math.min(offset + PAGE_SIZE, total)} из {total}
           </p>
           <div className="flex gap-2">
             <Button
@@ -203,7 +196,7 @@ export default function UsersPage() {
               onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
             >
               <ChevronLeft className="mr-1 size-4" />
-              Previous
+              Назад
             </Button>
             <Button
               variant="outline"
@@ -211,7 +204,7 @@ export default function UsersPage() {
               disabled={offset + PAGE_SIZE >= total}
               onClick={() => setOffset(offset + PAGE_SIZE)}
             >
-              Next
+              Вперёд
               <ChevronRight className="ml-1 size-4" />
             </Button>
           </div>

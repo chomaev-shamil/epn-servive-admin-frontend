@@ -54,19 +54,19 @@ export default function LoginPage() {
             E
           </div>
           <CardTitle className="text-xl font-semibold">
-            {step === "email" ? "Welcome back" : "Check your email"}
+            {step === "email" ? "Добро пожаловать" : "Проверьте почту"}
           </CardTitle>
           <CardDescription className="mt-1">
             {step === "email"
-              ? "Sign in to EPN Admin Panel"
-              : `We sent a code to ${email}`}
+              ? "Войдите в панель администратора EPN"
+              : `Мы отправили код на ${email}`}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
           {step === "email" ? (
             <form onSubmit={handleRequestOtp} className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Email address</label>
+                <label className="text-sm font-medium mb-1.5 block">Email</label>
                 <Input
                   type="email"
                   placeholder="admin@example.com"
@@ -77,13 +77,13 @@ export default function LoginPage() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Sending..." : "Continue"}
+                {loading ? "Отправка..." : "Получить код"}
               </Button>
             </form>
           ) : (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Verification code</label>
+                <label className="text-sm font-medium mb-1.5 block">Код подтверждения</label>
                 <Input
                   type="text"
                   placeholder="000000"
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Verifying..." : "Sign In"}
+                {loading ? "Проверка..." : "Войти"}
               </Button>
               <Button
                 type="button"
@@ -109,7 +109,7 @@ export default function LoginPage() {
                 }}
               >
                 <ArrowLeft className="mr-1.5 size-3.5" />
-                Use different email
+                Другой email
               </Button>
             </form>
           )}

@@ -13,18 +13,19 @@ export interface LoginResponse {
 // ── Users ──
 
 export interface AdminUserResponse {
-  id: string;
+  id: string | null;
+  first_name: string | null;
   email: string | null;
-  firstName: string | null;
-  appleId: string | null;
-  telegramId: string | null;
-  referralCode: string;
-  referrerCode: string | null;
-  referralLink: string | null;
+  apple_id: string | null;
+  telegram_id: string | null;
   role: UserRole;
-  receiptEmail: string | null;
-  systemNotification?: string | null;
-  contactCode?: string | null;
+  referral_code: string;
+  referrer_code: string | null;
+  system_notification: string | null;
+  fixed_payment_provider: string | null;
+  contact_code: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface AdminUsersListResponse {
@@ -34,16 +35,28 @@ export interface AdminUsersListResponse {
 
 // ── Devices ──
 
+export interface AdminDeviceUserDTO {
+  id: string;
+  email: string | null;
+}
+
 export interface AdminDeviceResponse {
   id: string | null;
-  shortId: string;
-  userId?: string | null;
+  short_id: string;
+  internal_short_subscription_id: string;
   name: string | null;
   agent: string;
-  isVirtual?: boolean;
-  expireAt?: string | null;
-  platform?: string | null;
-  createdAt?: string | null;
+  is_active: boolean;
+  hasActiveSubscription: boolean;
+  ip_address?: string | null;
+  country_code?: string | null;
+  platform: string;
+  app_version?: string | null;
+  device_identifier?: string | null;
+  application?: string | null;
+  user?: AdminDeviceUserDTO | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface AdminDevicesListResponse {
@@ -81,10 +94,12 @@ export interface AdminUserSubscriptionsListResponse {
 
 export interface AdminWalletResponse {
   id: string | null;
-  shortId: string;
-  userId: string;
+  short_id: string;
+  user_id: string;
   balance: string;
-  allowsTestPayments: boolean;
+  allows_test_payments: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface AdminWalletsListResponse {
@@ -102,6 +117,109 @@ export interface AdminWalletSummaryStatsResponse {
 
 export interface AdminWalletTopUsersResponse {
   [key: string]: unknown;
+}
+
+// ── User Traffic Packages ──
+
+export type UserTrafficPackageStatus = "active" | "depleted" | "expired" | "cancelled";
+
+export interface AdminUserTrafficPackageResponse {
+  id: string;
+  traffic_package_id: string;
+  name: string;
+  traffic_limit_gb: number;
+  price: string;
+  status: UserTrafficPackageStatus;
+  purchased_at: string | null;
+  used_bytes: number;
+  usage_synced_at: string | null;
+  remnawave_squads_synced: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AdminUserTrafficPackagesListResponse {
+  count: number;
+  results: AdminUserTrafficPackageResponse[];
+}
+
+// ── Service ──
+
+export interface AdminServiceResponse {
+  id: string;
+  slug: string;
+  name: string;
+  domain: string | null;
+  frontend_url: string | null;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+// ── Payments ──
+
+export interface AdminPaymentResponse {
+  id: string;
+  user_id: string;
+  user_subscription_id: string | null;
+  traffic_package_id: string | null;
+  user_traffic_package_id: string | null;
+  amount: string;
+  currency: string;
+  amount_in_rub: string | null;
+  exchange_rate: string | null;
+  payment_provider: string;
+  status: string;
+  payment_date: string | null;
+  charge_at: string | null;
+  external_transaction_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AdminPaymentsListResponse {
+  count: number;
+  results: AdminPaymentResponse[];
+}
+
+// ── Wallet Transactions ──
+
+export interface AdminWalletTransactionResponse {
+  id: string;
+  wallet_id: string;
+  type: string;
+  amount: string;
+  balance_after: string;
+  description: string | null;
+  source: string;
+  payment_id: string | null;
+  user_subscription_id: string | null;
+  device_id: string | null;
+  created_by_user_id: string | null;
+  created_at: string | null;
+}
+
+export interface AdminWalletTransactionsListResponse {
+  count: number;
+  results: AdminWalletTransactionResponse[];
+}
+
+// ── Traffic Packages (catalog) ──
+
+export interface AdminTrafficPackageResponse {
+  id: string | null;
+  name: string;
+  description: string | null;
+  traffic_limit_gb: number;
+  price: string;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AdminTrafficPackagesListResponse {
+  count: number;
+  results: AdminTrafficPackageResponse[];
 }
 
 // ── Vouchers ──
