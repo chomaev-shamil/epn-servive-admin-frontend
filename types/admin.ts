@@ -6,6 +6,14 @@ export interface OtpRequestResponse {
 }
 
 export interface LoginResponse {
+  accessToken: string | null;
+  refreshToken: string | null;
+  totpToken: string | null;
+  totpRequired: boolean;
+  totpSetupRequired: boolean;
+}
+
+export interface TotpVerifyResponse {
   accessToken: string;
   refreshToken: string;
 }

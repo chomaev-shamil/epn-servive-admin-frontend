@@ -22,6 +22,7 @@ import type {
   AdminPaymentsListResponse,
   AdminWalletTransactionsListResponse,
   LoginResponse,
+  TotpVerifyResponse,
   OtpRequestResponse,
   PaymentDayStat,
   WalletDayStat,
@@ -111,6 +112,16 @@ export async function loginOtp(
   return fetchApi("/api/auth/otp/login", {
     method: "POST",
     body: JSON.stringify({ email, code, userAgent }),
+  });
+}
+
+export async function verifyTotp(
+  totpToken: string,
+  code: string
+): Promise<TotpVerifyResponse> {
+  return fetchApi("/api/auth/totp/verify", {
+    method: "POST",
+    body: JSON.stringify({ totpToken, code }),
   });
 }
 
