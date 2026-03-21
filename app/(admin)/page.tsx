@@ -45,7 +45,6 @@ import type {
   AdminWalletTopUser,
 } from "@/types/admin";
 import {
-  Wallet,
   Users,
   TrendingUp,
   TrendingDown,
@@ -224,13 +223,6 @@ export default function DashboardPage() {
       color: "text-red-600 bg-red-50",
     },
     {
-      label: "Новые кошельки",
-      value: summary ? String(summary.new_wallets) : null,
-      sub: null,
-      icon: Wallet,
-      color: "text-violet-600 bg-violet-50",
-    },
-    {
       label: "Всего устройств",
       value: devices ? String(devices.totalCount) : null,
       sub: devices ? `${devices.activeCount} активных` : null,
@@ -324,7 +316,7 @@ export default function DashboardPage() {
       )}
 
       {/* Summary cards */}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {summaryCards.map((stat) => (
           <Card key={stat.label} className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
