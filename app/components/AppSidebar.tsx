@@ -91,10 +91,7 @@ export function AppSidebar() {
                   {services.map((service) => (
                     <DropdownMenuItem
                       key={service.slug}
-                      onClick={() => {
-                        switchService(service.slug);
-                        router.refresh();
-                      }}
+                      onClick={() => switchService(service.slug)}
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <div className="flex size-6 items-center justify-center rounded bg-primary/10 text-primary text-xs font-bold shrink-0">

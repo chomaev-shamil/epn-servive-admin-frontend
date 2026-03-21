@@ -4,11 +4,32 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAccessToken } from "@/lib/auth";
 import { getAvailableServices } from "@/lib/api";
-import { ServiceProvider } from "@/lib/service-context";
+import { ServiceProvider, useService } from "@/lib/service-context";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "./AppSidebar";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+
+function AdminShell({ children }: { children: React.ReactNode }) {
+  const { currentSlug } = useService();
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-card/50 px-6">
+          <SidebarTrigger className="-ml-2" />
+          <Separator orientation="vertical" className="!h-5" />
+          <span className="text-sm text-muted-foreground font-medium">Панель администратора</span>
+          <div className="ml-auto">
+            <ThemeSwitcher />
+          </div>
+        </header>
+        <div key={currentSlug} className="flex-1 p-8">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -33,20 +54,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   return (
     <ServiceProvider fetchServices={getAvailableServices}>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-card/50 px-6">
-            <SidebarTrigger className="-ml-2" />
-            <Separator orientation="vertical" className="!h-5" />
-            <span className="text-sm text-muted-foreground font-medium">Панель администратора</span>
-            <div className="ml-auto">
-              <ThemeSwitcher />
-            </div>
-          </header>
-          <div className="flex-1 p-8">{children}</div>
-        </SidebarInset>
-      </SidebarProvider>
+      <AdminShell>{children}</AdminShell>
     </ServiceProvider>
   );
 }
