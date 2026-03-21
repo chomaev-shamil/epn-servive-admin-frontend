@@ -107,16 +107,78 @@ export interface AdminWalletsListResponse {
   results: AdminWalletResponse[];
 }
 
-export interface AdminWalletDailyStatsResponse {
-  [key: string]: unknown;
+export interface AdminWalletDailyStatsItem {
+  date: string;
+  deposits: string;
+  withdraws: string;
+  depositCount: number;
+  withdrawCount: number;
+  newWallets: number;
 }
+
+export type AdminWalletDailyStatsResponse = AdminWalletDailyStatsItem[];
 
 export interface AdminWalletSummaryStatsResponse {
-  [key: string]: unknown;
+  from: string;
+  to: string;
+  deposit_total: string;
+  withdraw_total: string;
+  deposit_count: number;
+  withdraw_count: number;
+  new_wallets: number;
+  payments_by_currency?: Record<string, { total: string; count: string }>;
 }
 
-export interface AdminWalletTopUsersResponse {
-  [key: string]: unknown;
+export interface AdminWalletTopUser {
+  user_id: string;
+  email: string | null;
+  first_name: string | null;
+  total: string;
+  transaction_count: number;
+}
+
+export type AdminWalletTopUsersResponse = AdminWalletTopUser[];
+
+// ── Statistics ──
+
+export interface PaymentDayStat {
+  date: string;
+  totalAmount: number;
+  count: number;
+}
+
+export interface WalletDayStat {
+  date: string;
+  depositsCount: number;
+  depositsAmount: number;
+  withdrawalsCount: number;
+  withdrawalsAmount: number;
+}
+
+export interface DevicePlatformStat {
+  platform: string;
+  count: number;
+}
+
+export interface DeviceStats {
+  byPlatform: DevicePlatformStat[];
+  virtualCount: number;
+  physicalCount: number;
+  activeCount: number;
+  inactiveCount: number;
+  totalCount: number;
+}
+
+export interface UserDayStat {
+  date: string;
+  newUsers: number;
+  referredUsers: number;
+}
+
+export interface VoucherDayStat {
+  date: string;
+  usages: number;
+  totalAmount: number;
 }
 
 // ── User Traffic Packages ──

@@ -23,6 +23,11 @@ import type {
   AdminWalletTransactionsListResponse,
   LoginResponse,
   OtpRequestResponse,
+  PaymentDayStat,
+  WalletDayStat,
+  DeviceStats,
+  UserDayStat,
+  VoucherDayStat,
 } from "@/types/admin";
 
 const baseUrl = () => env.backendUrl.replace(/\/$/, "");
@@ -402,6 +407,63 @@ export async function getWalletTopUsers(
     method: "GET",
     token: t,
   });
+}
+
+// ── Statistics ──
+
+export async function getPaymentDailyStats(
+  params?: { fromDate?: string; toDate?: string },
+  token?: string | null
+): Promise<PaymentDayStat[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.fromDate) search.set("fromDate", params.fromDate);
+  if (params?.toDate) search.set("toDate", params.toDate);
+  const qs = search.toString();
+  return fetchApi(`/api/admin/statistics/payments/daily${qs ? `?${qs}` : ""}`, { method: "GET", token: t });
+}
+
+export async function getWalletDailyStatistics(
+  params?: { fromDate?: string; toDate?: string },
+  token?: string | null
+): Promise<WalletDayStat[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.fromDate) search.set("fromDate", params.fromDate);
+  if (params?.toDate) search.set("toDate", params.toDate);
+  const qs = search.toString();
+  return fetchApi(`/api/admin/statistics/wallets/daily${qs ? `?${qs}` : ""}`, { method: "GET", token: t });
+}
+
+export async function getDeviceStats(
+  token?: string | null
+): Promise<DeviceStats> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/admin/statistics/devices", { method: "GET", token: t });
+}
+
+export async function getUserDailyStats(
+  params?: { fromDate?: string; toDate?: string },
+  token?: string | null
+): Promise<UserDayStat[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.fromDate) search.set("fromDate", params.fromDate);
+  if (params?.toDate) search.set("toDate", params.toDate);
+  const qs = search.toString();
+  return fetchApi(`/api/admin/statistics/users/daily${qs ? `?${qs}` : ""}`, { method: "GET", token: t });
+}
+
+export async function getVoucherDailyStats(
+  params?: { fromDate?: string; toDate?: string },
+  token?: string | null
+): Promise<VoucherDayStat[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.fromDate) search.set("fromDate", params.fromDate);
+  if (params?.toDate) search.set("toDate", params.toDate);
+  const qs = search.toString();
+  return fetchApi(`/api/admin/statistics/vouchers/daily${qs ? `?${qs}` : ""}`, { method: "GET", token: t });
 }
 
 // ── Vouchers ──
