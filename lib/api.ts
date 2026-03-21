@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import { getAccessToken } from "@/lib/auth";
+import { getServiceSlug, type AvailableService } from "@/lib/service-context";
 import type {
   AdminUsersListResponse,
   AdminUserResponse,
@@ -47,6 +48,10 @@ async function fetchApi<T>(
   }
   if (token) {
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+  }
+  const slug = getServiceSlug();
+  if (slug) {
+    (headers as Record<string, string>)["X-Service-Slug"] = slug;
   }
 
   let res: Response;
@@ -599,6 +604,13 @@ export async function toggleApiKey(
 }
 
 // ── Service ──
+
+export async function getAvailableServices(
+  token?: string | null
+): Promise<AvailableService[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/admin/service/available", { method: "GET", token: t });
+}
 
 export async function getService(
   token?: string | null
