@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   ChartContainer,
   ChartTooltip,
@@ -45,6 +52,7 @@ import {
   CreditCard,
   Smartphone,
   Ticket,
+  CalendarIcon,
 } from "lucide-react";
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -58,7 +66,22 @@ const PLATFORM_COLORS: Record<string, string> = {
   unknown: "hsl(0, 0%, 60%)",
 };
 
-function formatDate(dateStr: string) {
+const PLATFORM_LABELS: Record<string, string> = {
+  ios: "iOS",
+  android: "Android",
+  macos: "macOS",
+  windows: "Windows",
+  ipados: "iPadOS",
+  tvos: "tvOS",
+  xros: "xrOS",
+  unknown: "Другое",
+};
+
+function normalizePlatform(raw: string): string {
+  return raw.replace(/^DevicePlatform\./i, "").toLowerCase();
+}
+
+function formatChartDate(dateStr: string) {
   const d = new Date(dateStr);
   return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 }
@@ -70,6 +93,25 @@ function formatAmount(value: number | string) {
     maximumFractionDigits: 2,
   }).format(num);
 }
+
+function toISODate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function formatDisplayDate(date: Date): string {
+  return date.toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+const PRESETS = [
+  { label: "7 дней", days: 7 },
+  { label: "30 дней", days: 30 },
+  { label: "90 дней", days: 90 },
+  { label: "365 дней", days: 365 },
+] as const;
 
 const paymentsChartConfig = {
   totalAmount: { label: "Сумма", color: "hsl(210, 80%, 55%)" },
@@ -87,6 +129,15 @@ const vouchersChartConfig = {
 } satisfies ChartConfig;
 
 export default function DashboardPage() {
+  const [fromDate, setFromDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d;
+  });
+  const [toDate, setToDate] = useState<Date>(() => new Date());
+  const [fromOpen, setFromOpen] = useState(false);
+  const [toOpen, setToOpen] = useState(false);
+
   const [summary, setSummary] = useState<AdminWalletSummaryStatsResponse | null>(null);
   const [payments, setPayments] = useState<PaymentDayStat[] | null>(null);
   const [users, setUsers] = useState<UserDayStat[] | null>(null);
@@ -95,41 +146,78 @@ export default function DashboardPage() {
   const [topUsers, setTopUsers] = useState<AdminWalletTopUser[] | null>(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
+    setError("");
+    setSummary(null);
+    setPayments(null);
+    setUsers(null);
+    setVouchers(null);
+    setTopUsers(null);
+
     const handleError = (e: unknown) => {
       if (e instanceof Error) setError((prev) => prev || e.message);
     };
 
-    getWalletSummaryStats().then(setSummary).catch(handleError);
-    getPaymentDailyStats().then(setPayments).catch(handleError);
-    getUserDailyStats().then(setUsers).catch(handleError);
-    getDeviceStats().then(setDevices).catch(handleError);
-    getVoucherDailyStats().then(setVouchers).catch(handleError);
-    getWalletTopUsers().then(setTopUsers).catch(handleError);
-  }, []);
+    const from = toISODate(fromDate);
+    const to = toISODate(toDate);
+
+    getWalletSummaryStats({ from, to }).then(setSummary).catch(handleError);
+    getPaymentDailyStats({ fromDate: from, toDate: to }).then(setPayments).catch(handleError);
+    getUserDailyStats({ fromDate: from, toDate: to }).then(setUsers).catch(handleError);
+    getVoucherDailyStats({ fromDate: from, toDate: to }).then(setVouchers).catch(handleError);
+    getWalletTopUsers({ from, to }).then(setTopUsers).catch(handleError);
+  }, [fromDate, toDate]);
+
+  useEffect(() => {
+    fetchData();
+    // devices не зависят от дат — грузим один раз
+    getDeviceStats().then(setDevices).catch(() => {});
+  }, [fetchData]);
+
+  const paymentsTotals = useMemo(() => {
+    if (!payments) return null;
+    return payments.reduce(
+      (acc, d) => ({ total: acc.total + d.totalAmount, count: acc.count + d.count }),
+      { total: 0, count: 0 }
+    );
+  }, [payments]);
+
+  const normalizedPlatforms = useMemo(() => {
+    if (!devices) return [];
+    return devices.byPlatform.map((p) => {
+      const key = normalizePlatform(p.platform);
+      return { platform: key, label: PLATFORM_LABELS[key] ?? key, count: p.count };
+    });
+  }, [devices]);
 
   const deviceChartConfig = useMemo(() => {
-    if (!devices) return {} as ChartConfig;
     const config: ChartConfig = {};
-    devices.byPlatform.forEach((p) => {
+    normalizedPlatforms.forEach((p) => {
       config[p.platform] = {
-        label: p.platform,
+        label: p.label,
         color: PLATFORM_COLORS[p.platform] ?? PLATFORM_COLORS.unknown,
       };
     });
     return config;
-  }, [devices]);
+  }, [normalizedPlatforms]);
 
   const summaryCards = [
     {
-      label: "Депозиты",
+      label: "Доход (платежи)",
+      value: paymentsTotals ? `${formatAmount(paymentsTotals.total)} ₽` : null,
+      sub: paymentsTotals ? `${paymentsTotals.count} платежей` : null,
+      icon: CreditCard,
+      color: "text-blue-600 bg-blue-50",
+    },
+    {
+      label: "Пополнения кошельков",
       value: summary ? `${formatAmount(summary.deposit_total)} ₽` : null,
       sub: summary ? `${summary.deposit_count} операций` : null,
       icon: TrendingUp,
       color: "text-emerald-600 bg-emerald-50",
     },
     {
-      label: "Списания",
+      label: "Списания с кошельков",
       value: summary ? `${formatAmount(summary.withdraw_total)} ₽` : null,
       sub: summary ? `${summary.withdraw_count} операций` : null,
       icon: TrendingDown,
@@ -147,17 +235,86 @@ export default function DashboardPage() {
       value: devices ? String(devices.totalCount) : null,
       sub: devices ? `${devices.activeCount} активных` : null,
       icon: Smartphone,
-      color: "text-blue-600 bg-blue-50",
+      color: "text-orange-600 bg-orange-50",
     },
   ];
 
+  function applyPreset(days: number) {
+    const to = new Date();
+    const from = new Date();
+    from.setDate(from.getDate() - days);
+    setFromDate(from);
+    setToDate(to);
+  }
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Главная</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Обзор основных показателей сервиса за последние 30 дней
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Главная</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Обзор основных показателей сервиса
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {PRESETS.map((p) => (
+            <Button
+              key={p.days}
+              variant="outline"
+              size="sm"
+              onClick={() => applyPreset(p.days)}
+            >
+              {p.label}
+            </Button>
+          ))}
+
+          <Popover open={fromOpen} onOpenChange={setFromOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <CalendarIcon className="size-3.5" />
+                {formatDisplayDate(fromDate)}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={fromDate}
+                onSelect={(d) => {
+                  if (d) {
+                    setFromDate(d);
+                    setFromOpen(false);
+                  }
+                }}
+                disabled={(d) => d > toDate || d > new Date()}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <span className="text-sm text-muted-foreground">—</span>
+
+          <Popover open={toOpen} onOpenChange={setToOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <CalendarIcon className="size-3.5" />
+                {formatDisplayDate(toDate)}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={toDate}
+                onSelect={(d) => {
+                  if (d) {
+                    setToDate(d);
+                    setToOpen(false);
+                  }
+                }}
+                disabled={(d) => d < fromDate || d > new Date()}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {error && (
@@ -167,7 +324,7 @@ export default function DashboardPage() {
       )}
 
       {/* Summary cards */}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
         {summaryCards.map((stat) => (
           <Card key={stat.label} className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -207,7 +364,7 @@ export default function DashboardPage() {
               <ChartContainer config={paymentsChartConfig} className="h-[250px] w-full">
                 <BarChart data={payments} accessibilityLayer>
                   <CartesianGrid vertical={false} />
-                  <XAxis dataKey="date" tickFormatter={formatDate} tickLine={false} axisLine={false} fontSize={12} />
+                  <XAxis dataKey="date" tickFormatter={formatChartDate} tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => formatAmount(v)} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="totalAmount" fill="var(--color-totalAmount)" radius={[4, 4, 0, 0]} />
@@ -230,7 +387,7 @@ export default function DashboardPage() {
               <ChartContainer config={usersChartConfig} className="h-[250px] w-full">
                 <LineChart data={users} accessibilityLayer>
                   <CartesianGrid vertical={false} />
-                  <XAxis dataKey="date" tickFormatter={formatDate} tickLine={false} axisLine={false} fontSize={12} />
+                  <XAxis dataKey="date" tickFormatter={formatChartDate} tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis tickLine={false} axisLine={false} fontSize={12} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line type="monotone" dataKey="newUsers" stroke="var(--color-newUsers)" strokeWidth={2} dot={false} />
@@ -257,7 +414,7 @@ export default function DashboardPage() {
               <ChartContainer config={vouchersChartConfig} className="h-[250px] w-full">
                 <BarChart data={vouchers} accessibilityLayer>
                   <CartesianGrid vertical={false} />
-                  <XAxis dataKey="date" tickFormatter={formatDate} tickLine={false} axisLine={false} fontSize={12} />
+                  <XAxis dataKey="date" tickFormatter={formatChartDate} tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis tickLine={false} axisLine={false} fontSize={12} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="usages" fill="var(--color-usages)" radius={[4, 4, 0, 0]} />
@@ -282,14 +439,14 @@ export default function DashboardPage() {
                   <PieChart accessibilityLayer>
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Pie
-                      data={devices.byPlatform}
+                      data={normalizedPlatforms}
                       dataKey="count"
                       nameKey="platform"
                       innerRadius={50}
                       outerRadius={90}
                       strokeWidth={2}
                     >
-                      {devices.byPlatform.map((entry) => (
+                      {normalizedPlatforms.map((entry) => (
                         <Cell
                           key={entry.platform}
                           fill={PLATFORM_COLORS[entry.platform] ?? PLATFORM_COLORS.unknown}
@@ -299,13 +456,13 @@ export default function DashboardPage() {
                   </PieChart>
                 </ChartContainer>
                 <div className="space-y-3 text-sm">
-                  {devices.byPlatform.map((p) => (
+                  {normalizedPlatforms.map((p) => (
                     <div key={p.platform} className="flex items-center gap-2">
                       <div
                         className="size-3 rounded-full shrink-0"
                         style={{ backgroundColor: PLATFORM_COLORS[p.platform] ?? PLATFORM_COLORS.unknown }}
                       />
-                      <span className="text-muted-foreground">{p.platform}</span>
+                      <span className="text-muted-foreground">{p.label}</span>
                       <span className="font-medium ml-auto">{p.count}</span>
                     </div>
                   ))}

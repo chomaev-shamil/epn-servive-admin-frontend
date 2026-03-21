@@ -390,20 +390,31 @@ export async function getWalletDailyStats(
 }
 
 export async function getWalletSummaryStats(
+  params?: { from?: string; to?: string },
   token?: string | null
 ): Promise<AdminWalletSummaryStatsResponse> {
   const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
-  return fetchApi("/api/admin/wallets/stats/summary", {
+  const search = new URLSearchParams();
+  if (params?.from) search.set("from", params.from);
+  if (params?.to) search.set("to", params.to);
+  const qs = search.toString();
+  return fetchApi(`/api/admin/wallets/stats/summary${qs ? `?${qs}` : ""}`, {
     method: "GET",
     token: t,
   });
 }
 
 export async function getWalletTopUsers(
+  params?: { from?: string; to?: string; limit?: number },
   token?: string | null
 ): Promise<AdminWalletTopUsersResponse> {
   const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
-  return fetchApi("/api/admin/wallets/stats/top-users", {
+  const search = new URLSearchParams();
+  if (params?.from) search.set("from", params.from);
+  if (params?.to) search.set("to", params.to);
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  const qs = search.toString();
+  return fetchApi(`/api/admin/wallets/stats/top-users${qs ? `?${qs}` : ""}`, {
     method: "GET",
     token: t,
   });
