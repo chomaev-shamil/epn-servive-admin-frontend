@@ -61,6 +61,7 @@ import {
   UserMinus,
   UsersRound,
   Gift,
+  Clock,
 } from "lucide-react";
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -387,8 +388,12 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Summary cards */}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Summary cards (date-dependent) */}
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Clock className="size-3" />
+        <span>Зависит от выбранного периода</span>
+      </div>
+      <div className="-mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {summaryCards.map((stat) => (
           <Card key={stat.label} className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -422,6 +427,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <CreditCard className="size-4 text-muted-foreground" />
             <CardTitle className="text-sm font-medium">Платежи по дням</CardTitle>
+            <Clock className="size-3 text-muted-foreground ml-auto" />
           </CardHeader>
           <CardContent>
             {payments ? (
@@ -445,6 +451,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <Users className="size-4 text-muted-foreground" />
             <CardTitle className="text-sm font-medium">Новые пользователи по дням</CardTitle>
+            <Clock className="size-3 text-muted-foreground ml-auto" />
           </CardHeader>
           <CardContent>
             {users ? (
@@ -472,6 +479,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <Ticket className="size-4 text-muted-foreground" />
             <CardTitle className="text-sm font-medium">Ваучеры по дням</CardTitle>
+            <Clock className="size-3 text-muted-foreground ml-auto" />
           </CardHeader>
           <CardContent>
             {vouchers ? (
@@ -550,6 +558,7 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center gap-2 pb-2">
           <TrendingUp className="size-4 text-muted-foreground" />
           <CardTitle className="text-sm font-medium">Топ пользователей по обороту</CardTitle>
+          <Clock className="size-3 text-muted-foreground ml-auto" />
         </CardHeader>
         <CardContent>
           {topUsers ? (
