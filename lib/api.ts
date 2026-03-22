@@ -34,6 +34,8 @@ import type {
   AdminAccessDTO,
   CurrentUserResponse,
   PlatformPriceDTO,
+  BusinessMetrics,
+  TopReferrer,
 } from "@/types/admin";
 
 const baseUrl = () => env.backendUrl.replace(/\/$/, "");
@@ -448,6 +450,24 @@ export async function getWalletTopUsers(
 }
 
 // ── Statistics ──
+
+export async function getBusinessMetrics(
+  token?: string | null
+): Promise<BusinessMetrics> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/admin/statistics/metrics", { method: "GET", token: t });
+}
+
+export async function getTopReferrers(
+  params?: { limit?: number },
+  token?: string | null
+): Promise<TopReferrer[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  const qs = search.toString();
+  return fetchApi(`/api/admin/statistics/top-referrers${qs ? `?${qs}` : ""}`, { method: "GET", token: t });
+}
 
 export async function getPaymentDailyStats(
   params?: { fromDate?: string; toDate?: string },

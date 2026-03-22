@@ -329,6 +329,28 @@ export interface AdminApiKeysListResponse {
   results: AdminApiKeyResponse[];
 }
 
+// ── Business Metrics ──
+
+export interface BusinessMetrics {
+  projectedMonthlyRevenue: number;
+  activeDevices: number;
+  ltv: number;
+  avgTopUpAmount: number;
+  totalUsers: number;
+  churnRate: number;
+  churned: number;
+  churnBase: number;
+}
+
+export interface TopReferrer {
+  userId: string;
+  email: string | null;
+  firstName: string | null;
+  referralCode: string;
+  invitedCount: number;
+  invitedWithTopupCount: number;
+}
+
 // ── Billing ──
 
 export interface PlatformPriceDTO {

@@ -35,6 +35,8 @@ import {
   getDeviceStats,
   getVoucherDailyStats,
   getWalletTopUsers,
+  getBusinessMetrics,
+  getTopReferrers,
 } from "@/lib/api";
 import type {
   AdminWalletSummaryStatsResponse,
@@ -43,6 +45,8 @@ import type {
   DeviceStats,
   VoucherDayStat,
   AdminWalletTopUser,
+  BusinessMetrics,
+  TopReferrer,
 } from "@/types/admin";
 import {
   Users,
@@ -52,6 +56,11 @@ import {
   Smartphone,
   Ticket,
   CalendarIcon,
+  DollarSign,
+  Activity,
+  UserMinus,
+  UsersRound,
+  Gift,
 } from "lucide-react";
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -143,6 +152,8 @@ export default function DashboardPage() {
   const [devices, setDevices] = useState<DeviceStats | null>(null);
   const [vouchers, setVouchers] = useState<VoucherDayStat[] | null>(null);
   const [topUsers, setTopUsers] = useState<AdminWalletTopUser[] | null>(null);
+  const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
+  const [topReferrers, setTopReferrers] = useState<TopReferrer[] | null>(null);
   const [error, setError] = useState("");
 
   const fetchData = useCallback(() => {
@@ -169,8 +180,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData();
-    // devices не зависят от дат — грузим один раз
+    // не зависят от дат — грузим один раз
     getDeviceStats().then(setDevices).catch(() => {});
+    getBusinessMetrics().then(setMetrics).catch(() => {});
+    getTopReferrers({ limit: 10 }).then(setTopReferrers).catch(() => {});
   }, [fetchData]);
 
   const paymentsTotals = useMemo(() => {
@@ -199,6 +212,37 @@ export default function DashboardPage() {
     });
     return config;
   }, [normalizedPlatforms]);
+
+  const metricsCards = [
+    {
+      label: "Прогноз дохода / мес",
+      value: metrics ? `${formatAmount(metrics.projectedMonthlyRevenue)} ₽` : null,
+      sub: metrics ? `${metrics.activeDevices} активных устройств` : null,
+      icon: DollarSign,
+      color: "text-emerald-600 bg-emerald-50",
+    },
+    {
+      label: "LTV",
+      value: metrics ? `${formatAmount(metrics.ltv)} ₽` : null,
+      sub: metrics ? `${metrics.totalUsers} пользователей` : null,
+      icon: Activity,
+      color: "text-blue-600 bg-blue-50",
+    },
+    {
+      label: "Средний депозит",
+      value: metrics ? `${formatAmount(metrics.avgTopUpAmount)} ₽` : null,
+      sub: null,
+      icon: CreditCard,
+      color: "text-violet-600 bg-violet-50",
+    },
+    {
+      label: "Отток (30 дней)",
+      value: metrics ? `${metrics.churnRate.toFixed(1)}%` : null,
+      sub: metrics ? `${metrics.churned} из ${metrics.churnBase}` : null,
+      icon: UserMinus,
+      color: "text-red-600 bg-red-50",
+    },
+  ];
 
   const summaryCards = [
     {
@@ -314,6 +358,34 @@ export default function DashboardPage() {
           {error}
         </div>
       )}
+
+      {/* Business metrics */}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {metricsCards.map((stat) => (
+          <Card key={stat.label} className="shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.label}
+              </CardTitle>
+              <div className={`rounded-lg p-2 ${stat.color}`}>
+                <stat.icon className="size-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {stat.value !== null ? (
+                <>
+                  <div className="text-2xl font-bold tracking-tight">{stat.value}</div>
+                  {stat.sub && (
+                    <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+                  )}
+                </>
+              ) : (
+                <Skeleton className="h-8 w-24" />
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       {/* Summary cards */}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -504,6 +576,52 @@ export default function DashboardPage() {
                         </td>
                         <td className="py-2 text-right font-medium">{formatAmount(user.total)} ₽</td>
                         <td className="py-2 text-right">{user.transaction_count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Нет данных</p>
+            )
+          ) : (
+            <Skeleton className="h-[200px] w-full" />
+          )}
+        </CardContent>
+      </Card>
+      {/* Top referrers */}
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center gap-2 pb-2">
+          <Gift className="size-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Топ рефереров</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {topReferrers ? (
+            topReferrers.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-2 font-medium">#</th>
+                      <th className="pb-2 font-medium">Пользователь</th>
+                      <th className="pb-2 font-medium">Реф. код</th>
+                      <th className="pb-2 font-medium text-right">Приглашено</th>
+                      <th className="pb-2 font-medium text-right">С пополнением</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topReferrers.map((ref, i) => (
+                      <tr key={ref.userId} className="border-b last:border-0">
+                        <td className="py-2 text-muted-foreground">{i + 1}</td>
+                        <td className="py-2">
+                          <div className="font-medium">{ref.email ?? ref.firstName ?? "—"}</div>
+                          <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                            {ref.userId}
+                          </div>
+                        </td>
+                        <td className="py-2 font-mono text-xs">{ref.referralCode}</td>
+                        <td className="py-2 text-right font-medium">{ref.invitedCount}</td>
+                        <td className="py-2 text-right">{ref.invitedWithTopupCount}</td>
                       </tr>
                     ))}
                   </tbody>
