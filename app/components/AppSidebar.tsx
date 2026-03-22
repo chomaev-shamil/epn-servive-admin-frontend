@@ -32,6 +32,7 @@ import {
   Receipt,
   ArrowLeftRight,
   Settings,
+  DollarSign,
   ChevronsUpDown,
   Check,
   Shield,
@@ -55,6 +56,7 @@ const managementItems = [
 
 const configItems = [
   { href: "/service", label: "Сервис", icon: Settings },
+  { href: "/pricing", label: "Тарифы", icon: DollarSign },
 ];
 
 const superadminItems = [

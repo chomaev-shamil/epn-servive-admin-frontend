@@ -33,6 +33,7 @@ import type {
   SuperadminServiceDTO,
   AdminAccessDTO,
   CurrentUserResponse,
+  PlatformPriceDTO,
 } from "@/types/admin";
 
 const baseUrl = () => env.backendUrl.replace(/\/$/, "");
@@ -718,6 +719,28 @@ export async function purchasePackageForUser(
     const text = await res.text();
     throw new Error(text || `HTTP ${res.status}`);
   }
+}
+
+// ── Billing ──
+
+export async function getPlatformPrices(
+  token?: string | null
+): Promise<PlatformPriceDTO[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/admin/billing/prices", { method: "GET", token: t });
+}
+
+export async function updatePlatformPrice(
+  platform: string,
+  pricePerDay: number | string,
+  token?: string | null
+): Promise<PlatformPriceDTO> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi(`/api/admin/billing/prices/${encodeURIComponent(platform)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ price_per_day: pricePerDay }),
+    token: t,
+  });
 }
 
 // ── Superadmin ──

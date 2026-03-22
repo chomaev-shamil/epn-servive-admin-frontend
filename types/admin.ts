@@ -329,6 +329,13 @@ export interface AdminApiKeysListResponse {
   results: AdminApiKeyResponse[];
 }
 
+// ── Billing ──
+
+export interface PlatformPriceDTO {
+  platform: string;
+  price_per_day: number;
+}
+
 // ── Current User ──
 
 export interface CurrentUserResponse {
