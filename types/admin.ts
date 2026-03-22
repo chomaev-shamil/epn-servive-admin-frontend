@@ -27,6 +27,7 @@ export interface AdminUserResponse {
   apple_id: string | null;
   telegram_id: string | null;
   role: UserRole;
+  is_superadmin: boolean;
   referral_code: string;
   referrer_code: string | null;
   system_notification: string | null;
@@ -326,4 +327,35 @@ export interface AdminApiKeyResponse {
 export interface AdminApiKeysListResponse {
   count: number;
   results: AdminApiKeyResponse[];
+}
+
+// ── Current User ──
+
+export interface CurrentUserResponse {
+  id: string | null;
+  firstName: string | null;
+  email: string | null;
+  isSuperadmin: boolean;
+}
+
+// ── Superadmin ──
+
+export interface SuperadminServiceDTO {
+  id: string;
+  slug: string;
+  name: string;
+  domain: string | null;
+  frontend_url: string | null;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AdminAccessDTO {
+  id: string;
+  user_id: string;
+  service_id: string;
+  service_slug: string | null;
+  service_name: string | null;
+  created_at: string | null;
 }

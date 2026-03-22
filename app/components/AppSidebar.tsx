@@ -34,9 +34,13 @@ import {
   Settings,
   ChevronsUpDown,
   Check,
+  Shield,
+  Server,
+  UserCog,
 } from "lucide-react";
 import { clearTokens } from "@/lib/auth";
 import { useService } from "@/lib/service-context";
+import { useCurrentUser } from "@/lib/user-context";
 
 const overviewItems = [
   { href: "/", label: "Главная", icon: LayoutDashboard },
@@ -53,10 +57,16 @@ const configItems = [
   { href: "/service", label: "Сервис", icon: Settings },
 ];
 
+const superadminItems = [
+  { href: "/superadmin/services", label: "Сервисы", icon: Server },
+  { href: "/superadmin/access", label: "Права доступа", icon: UserCog },
+];
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { services, currentSlug, switchService } = useService();
+  const { user } = useCurrentUser();
 
   const currentService = services.find((s) => s.slug === currentSlug);
 
@@ -182,6 +192,29 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {user?.isSuperadmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>
+              <Shield className="size-3 mr-1" />
+              Суперадмин
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {superadminItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
       </SidebarContent>
 

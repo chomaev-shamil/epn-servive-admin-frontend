@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAccessToken } from "@/lib/auth";
-import { getAvailableServices } from "@/lib/api";
+import { getAvailableServices, getCurrentUser } from "@/lib/api";
 import { ServiceProvider, useService } from "@/lib/service-context";
+import { UserProvider } from "@/lib/user-context";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "./AppSidebar";
@@ -53,8 +54,10 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ServiceProvider fetchServices={getAvailableServices}>
-      <AdminShell>{children}</AdminShell>
-    </ServiceProvider>
+    <UserProvider fetchUser={getCurrentUser}>
+      <ServiceProvider fetchServices={getAvailableServices}>
+        <AdminShell>{children}</AdminShell>
+      </ServiceProvider>
+    </UserProvider>
   );
 }

@@ -30,6 +30,9 @@ import type {
   DeviceStats,
   UserDayStat,
   VoucherDayStat,
+  SuperadminServiceDTO,
+  AdminAccessDTO,
+  CurrentUserResponse,
 } from "@/types/admin";
 
 const baseUrl = () => env.backendUrl.replace(/\/$/, "");
@@ -128,6 +131,13 @@ export async function verifyTotp(
     method: "POST",
     body: JSON.stringify({ totpToken, code }),
   });
+}
+
+export async function getCurrentUser(
+  token?: string | null
+): Promise<CurrentUserResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/users/me", { method: "GET", token: t });
 }
 
 // ── Users ──
@@ -708,6 +718,118 @@ export async function purchasePackageForUser(
     const text = await res.text();
     throw new Error(text || `HTTP ${res.status}`);
   }
+}
+
+// ── Superadmin ──
+
+export async function superadminListServices(
+  token?: string | null
+): Promise<SuperadminServiceDTO[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/superadmin/services", { method: "GET", token: t });
+}
+
+export async function superadminCreateService(
+  body: { slug: string; name: string; domain?: string | null; frontendUrl?: string | null; isActive?: boolean },
+  token?: string | null
+): Promise<SuperadminServiceDTO> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/superadmin/services", {
+    method: "POST",
+    body: JSON.stringify(body),
+    token: t,
+  });
+}
+
+export async function superadminUpdateService(
+  serviceId: string,
+  body: { name?: string | null; domain?: string | null; frontendUrl?: string | null; isActive?: boolean | null },
+  token?: string | null
+): Promise<SuperadminServiceDTO> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi(`/api/superadmin/services/${encodeURIComponent(serviceId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+    token: t,
+  });
+}
+
+export async function superadminDeleteService(
+  serviceId: string,
+  token?: string | null
+): Promise<void> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const headers: HeadersInit = { Accept: "application/json" };
+  if (t) {
+    (headers as Record<string, string>)["Authorization"] = `Bearer ${t}`;
+  }
+  const res = await fetch(
+    `${baseUrl()}/api/superadmin/services/${encodeURIComponent(serviceId)}`,
+    { method: "DELETE", headers }
+  );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+}
+
+export async function superadminListAdminAccess(
+  params?: { userId?: string; serviceId?: string },
+  token?: string | null
+): Promise<AdminAccessDTO[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.userId) search.set("userId", params.userId);
+  if (params?.serviceId) search.set("serviceId", params.serviceId);
+  const qs = search.toString();
+  return fetchApi(`/api/superadmin/admin-access${qs ? `?${qs}` : ""}`, {
+    method: "GET",
+    token: t,
+  });
+}
+
+export async function superadminGrantAdminAccess(
+  body: { userId: string; serviceId: string },
+  token?: string | null
+): Promise<AdminAccessDTO> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/superadmin/admin-access", {
+    method: "POST",
+    body: JSON.stringify(body),
+    token: t,
+  });
+}
+
+export async function superadminRevokeAdminAccess(
+  accessId: string,
+  token?: string | null
+): Promise<void> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const headers: HeadersInit = { Accept: "application/json" };
+  if (t) {
+    (headers as Record<string, string>)["Authorization"] = `Bearer ${t}`;
+  }
+  const res = await fetch(
+    `${baseUrl()}/api/superadmin/admin-access/${encodeURIComponent(accessId)}`,
+    { method: "DELETE", headers }
+  );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+}
+
+export async function superadminSetSuperadmin(
+  userId: string,
+  isSuperadmin: boolean,
+  token?: string | null
+): Promise<Record<string, unknown>> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi(`/api/superadmin/users/${encodeURIComponent(userId)}/superadmin`, {
+    method: "PATCH",
+    body: JSON.stringify({ isSuperadmin }),
+    token: t,
+  });
 }
 
 // ── Remnawave ──
