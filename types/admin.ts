@@ -222,6 +222,12 @@ export interface AdminServiceResponse {
   name: string;
   domain: string | null;
   frontend_url: string | null;
+  sender_name: string | null;
+  sender_email: string | null;
+  telegram_bot_username: string | null;
+  telegram_bot_api_url: string | null;
+  telegram_bot_api_key: string | null;
+  client_description: string | null;
   is_active: boolean;
   created_at: string | null;
   updated_at: string | null;

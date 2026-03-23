@@ -651,7 +651,18 @@ export async function getService(
 }
 
 export async function updateService(
-  body: { name?: string | null; domain?: string | null; frontendUrl?: string | null },
+  body: {
+    name?: string | null;
+    domain?: string | null;
+    frontendUrl?: string | null;
+    senderName?: string | null;
+    senderEmail?: string | null;
+    telegramBotUsername?: string | null;
+    telegramBotApiUrl?: string | null;
+    telegramBotApiKey?: string | null;
+    clientDescription?: string | null;
+    isActive?: boolean | null;
+  },
   token?: string | null
 ): Promise<AdminServiceResponse> {
   const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);

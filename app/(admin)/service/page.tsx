@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Settings, Save, X } from "lucide-react";
 
@@ -15,21 +16,32 @@ export default function ServicePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // edit state
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
   const [frontendUrl, setFrontendUrl] = useState("");
+  const [clientDescription, setClientDescription] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [senderEmail, setSenderEmail] = useState("");
+  const [telegramBotUsername, setTelegramBotUsername] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
+
+  const populateForm = (s: AdminServiceResponse) => {
+    setName(s.name);
+    setDomain(s.domain ?? "");
+    setFrontendUrl(s.frontend_url ?? "");
+    setClientDescription(s.client_description ?? "");
+    setSenderName(s.sender_name ?? "");
+    setSenderEmail(s.sender_email ?? "");
+    setTelegramBotUsername(s.telegram_bot_username ?? "");
+  };
 
   useEffect(() => {
     getService()
       .then((s) => {
         setService(s);
-        setName(s.name);
-        setDomain(s.domain ?? "");
-        setFrontendUrl(s.frontend_url ?? "");
+        populateForm(s);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -44,11 +56,13 @@ export default function ServicePage() {
         name: name || null,
         domain: domain || null,
         frontendUrl: frontendUrl || null,
+        clientDescription: clientDescription || null,
+        senderName: senderName || null,
+        senderEmail: senderEmail || null,
+        telegramBotUsername: telegramBotUsername || null,
       });
       setService(updated);
-      setName(updated.name);
-      setDomain(updated.domain ?? "");
-      setFrontendUrl(updated.frontend_url ?? "");
+      populateForm(updated);
       setEditing(false);
       setSuccess("Настройки сохранены");
       setTimeout(() => setSuccess(""), 3000);
@@ -60,13 +74,32 @@ export default function ServicePage() {
   };
 
   const handleCancel = () => {
-    if (service) {
-      setName(service.name);
-      setDomain(service.domain ?? "");
-      setFrontendUrl(service.frontend_url ?? "");
-    }
+    if (service) populateForm(service);
     setEditing(false);
   };
+
+  const Field = ({
+    label,
+    value,
+    displayValue,
+    children,
+  }: {
+    label: string;
+    value?: string | null;
+    displayValue?: React.ReactNode;
+    children?: React.ReactNode;
+  }) => (
+    <div>
+      <label className="text-sm font-medium mb-1.5 block">{label}</label>
+      {editing ? (
+        children
+      ) : (
+        <div className="rounded border bg-muted/30 px-3 py-2 text-sm">
+          {displayValue ?? value ?? <span className="text-muted-foreground">Не указано</span>}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -106,7 +139,7 @@ export default function ServicePage() {
         <CardContent>
           {loading ? (
             <div className="space-y-4">
-              {Array.from({ length: 4 }).map((_, i) => (
+              {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i}>
                   <Skeleton className="mb-1.5 h-3 w-24" />
                   <Skeleton className="h-9 w-full" />
@@ -134,56 +167,71 @@ export default function ServicePage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">
-                  Название
-                </label>
-                {editing ? (
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Название сервиса"
+              <Field label="Название" value={service.name}>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Название сервиса"
+                />
+              </Field>
+
+              <Field label="Описание для клиентов" value={service.client_description}>
+                <div className="space-y-1.5">
+                  <Textarea
+                    value={clientDescription}
+                    onChange={(e) => setClientDescription(e.target.value.slice(0, 200))}
+                    placeholder="Описание сервиса, которое увидят клиенты"
+                    rows={3}
+                    maxLength={200}
                   />
-                ) : (
-                  <div className="rounded border bg-muted/30 px-3 py-2 text-sm">
-                    {service.name}
-                  </div>
-                )}
+                  <p className="text-xs text-muted-foreground text-right">
+                    {clientDescription.length}/200
+                  </p>
+                </div>
+              </Field>
+
+              <Field label="Домен" value={service.domain}>
+                <Input
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  placeholder="example.com"
+                />
+              </Field>
+
+              <Field label="URL фронтенда" value={service.frontend_url}>
+                <Input
+                  value={frontendUrl}
+                  onChange={(e) => setFrontendUrl(e.target.value)}
+                  placeholder="https://example.com"
+                />
+              </Field>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Имя отправителя" value={service.sender_name}>
+                  <Input
+                    value={senderName}
+                    onChange={(e) => setSenderName(e.target.value)}
+                    placeholder="EPN"
+                  />
+                </Field>
+
+                <Field label="Email отправителя" value={service.sender_email}>
+                  <Input
+                    type="email"
+                    value={senderEmail}
+                    onChange={(e) => setSenderEmail(e.target.value)}
+                    placeholder="noreply@example.com"
+                  />
+                </Field>
               </div>
 
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">
-                  Домен
-                </label>
-                {editing ? (
-                  <Input
-                    value={domain}
-                    onChange={(e) => setDomain(e.target.value)}
-                    placeholder="example.com"
-                  />
-                ) : (
-                  <div className="rounded border bg-muted/30 px-3 py-2 text-sm">
-                    {service.domain ?? <span className="text-muted-foreground">Не указан</span>}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">
-                  URL фронтенда
-                </label>
-                {editing ? (
-                  <Input
-                    value={frontendUrl}
-                    onChange={(e) => setFrontendUrl(e.target.value)}
-                    placeholder="https://example.com"
-                  />
-                ) : (
-                  <div className="rounded border bg-muted/30 px-3 py-2 text-sm">
-                    {service.frontend_url ?? <span className="text-muted-foreground">Не указан</span>}
-                  </div>
-                )}
-              </div>
+              <Field label="Telegram бот" value={service.telegram_bot_username}>
+                <Input
+                  value={telegramBotUsername}
+                  onChange={(e) => setTelegramBotUsername(e.target.value)}
+                  placeholder="@my_bot"
+                />
+              </Field>
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
