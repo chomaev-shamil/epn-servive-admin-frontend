@@ -99,14 +99,20 @@ export function AppSidebar() {
                     <ChevronsUpDown className="size-4 text-muted-foreground shrink-0" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[--radix-dropdown-menu-trigger-width]">
+                <DropdownMenuContent
+                  align="start"
+                  side="bottom"
+                  sideOffset={4}
+                  className="w-[--radix-dropdown-menu-trigger-width] max-h-[70vh] overflow-y-auto"
+                >
                   {services.map((service) => (
                     <DropdownMenuItem
                       key={service.slug}
                       onClick={() => switchService(service.slug)}
+                      className="py-2.5 px-3"
                     >
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <div className="flex size-6 items-center justify-center rounded bg-primary/10 text-primary text-xs font-bold shrink-0">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary text-sm font-bold shrink-0">
                           {service.name.charAt(0)}
                         </div>
                         <div className="flex flex-col min-w-0">
