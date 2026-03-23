@@ -63,29 +63,6 @@ export default function ServicePage() {
     setEditing(false);
   };
 
-  const Field = ({
-    label,
-    value,
-    displayValue,
-    children,
-  }: {
-    label: string;
-    value?: string | null;
-    displayValue?: React.ReactNode;
-    children?: React.ReactNode;
-  }) => (
-    <div>
-      <label className="text-sm font-medium mb-1.5 block">{label}</label>
-      {editing ? (
-        children
-      ) : (
-        <div className="rounded border bg-muted/30 px-3 py-2 text-sm">
-          {displayValue ?? value ?? <span className="text-muted-foreground">Не указано</span>}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div className="space-y-6">
       <div>
@@ -152,28 +129,42 @@ export default function ServicePage() {
                 </div>
               </div>
 
-              <Field label="Название" value={service.name}>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Название сервиса"
-                />
-              </Field>
-
-              <Field label="Описание для клиентов" value={service.client_description}>
-                <div className="space-y-1.5">
-                  <Textarea
-                    value={clientDescription}
-                    onChange={(e) => setClientDescription(e.target.value.slice(0, 200))}
-                    placeholder="Описание сервиса, которое увидят клиенты"
-                    rows={3}
-                    maxLength={200}
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Название</label>
+                {editing ? (
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Название сервиса"
                   />
-                  <p className="text-xs text-muted-foreground text-right">
-                    {clientDescription.length}/200
-                  </p>
-                </div>
-              </Field>
+                ) : (
+                  <div className="rounded border bg-muted/30 px-3 py-2 text-sm">
+                    {service.name}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Описание для клиентов</label>
+                {editing ? (
+                  <div className="space-y-1.5">
+                    <Textarea
+                      value={clientDescription}
+                      onChange={(e) => setClientDescription(e.target.value.slice(0, 200))}
+                      placeholder="Описание сервиса, которое увидят клиенты"
+                      rows={3}
+                      maxLength={200}
+                    />
+                    <p className="text-xs text-muted-foreground text-right">
+                      {clientDescription.length}/200
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded border bg-muted/30 px-3 py-2 text-sm">
+                    {service.client_description ?? <span className="text-muted-foreground">Не указано</span>}
+                  </div>
+                )}
+              </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
