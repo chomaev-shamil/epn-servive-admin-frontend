@@ -18,23 +18,13 @@ export default function ServicePage() {
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
-  const [domain, setDomain] = useState("");
-  const [frontendUrl, setFrontendUrl] = useState("");
   const [clientDescription, setClientDescription] = useState("");
-  const [senderName, setSenderName] = useState("");
-  const [senderEmail, setSenderEmail] = useState("");
-  const [telegramBotUsername, setTelegramBotUsername] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
 
   const populateForm = (s: AdminServiceResponse) => {
     setName(s.name);
-    setDomain(s.domain ?? "");
-    setFrontendUrl(s.frontend_url ?? "");
     setClientDescription(s.client_description ?? "");
-    setSenderName(s.sender_name ?? "");
-    setSenderEmail(s.sender_email ?? "");
-    setTelegramBotUsername(s.telegram_bot_username ?? "");
   };
 
   useEffect(() => {
@@ -54,12 +44,7 @@ export default function ServicePage() {
     try {
       const updated = await updateService({
         name: name || null,
-        domain: domain || null,
-        frontendUrl: frontendUrl || null,
         clientDescription: clientDescription || null,
-        senderName: senderName || null,
-        senderEmail: senderEmail || null,
-        telegramBotUsername: telegramBotUsername || null,
       });
       setService(updated);
       populateForm(updated);
@@ -188,49 +173,6 @@ export default function ServicePage() {
                     {clientDescription.length}/200
                   </p>
                 </div>
-              </Field>
-
-              <Field label="Домен" value={service.domain}>
-                <Input
-                  value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
-                  placeholder="example.com"
-                />
-              </Field>
-
-              <Field label="URL фронтенда" value={service.frontend_url}>
-                <Input
-                  value={frontendUrl}
-                  onChange={(e) => setFrontendUrl(e.target.value)}
-                  placeholder="https://example.com"
-                />
-              </Field>
-
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Имя отправителя" value={service.sender_name}>
-                  <Input
-                    value={senderName}
-                    onChange={(e) => setSenderName(e.target.value)}
-                    placeholder="EPN"
-                  />
-                </Field>
-
-                <Field label="Email отправителя" value={service.sender_email}>
-                  <Input
-                    type="email"
-                    value={senderEmail}
-                    onChange={(e) => setSenderEmail(e.target.value)}
-                    placeholder="noreply@example.com"
-                  />
-                </Field>
-              </div>
-
-              <Field label="Telegram бот" value={service.telegram_bot_username}>
-                <Input
-                  value={telegramBotUsername}
-                  onChange={(e) => setTelegramBotUsername(e.target.value)}
-                  placeholder="@my_bot"
-                />
               </Field>
 
               <div className="grid gap-5 sm:grid-cols-2">
