@@ -357,6 +357,35 @@ export interface TopReferrer {
   invitedWithTopupCount: number;
 }
 
+// ── Broadcasts ──
+
+export interface BroadcastResponse {
+  id: string;
+  serviceId: string;
+  message: string;
+  parseMode: string;
+  status: string;
+  userIds: string[];
+  imageId: string | null;
+  imageUrl: string | null;
+  totalCount: number;
+  sentCount: number;
+  failedCount: number;
+  createdBy: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+}
+
+export interface MediaImageResponse {
+  id: string;
+  url: string;
+  originalFilename: string | null;
+  contentType: string | null;
+  sizeBytes: number | null;
+  createdAt: string;
+}
+
 // ── Billing ──
 
 export interface PlatformPriceDTO {

@@ -36,6 +36,8 @@ import type {
   PlatformPriceDTO,
   BusinessMetrics,
   TopReferrer,
+  BroadcastResponse,
+  MediaImageResponse,
 } from "@/types/admin";
 
 const baseUrl = () => env.backendUrl.replace(/\/$/, "");
@@ -884,6 +886,116 @@ export async function superadminSetSuperadmin(
     body: JSON.stringify({ isSuperadmin }),
     token: t,
   });
+}
+
+// ── Broadcasts ──
+
+export async function getBroadcastRecipients(
+  params?: { hasTelegram?: boolean; search?: string; fromDate?: string; toDate?: string },
+  token?: string | null
+): Promise<string[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.hasTelegram != null) search.set("hasTelegram", String(params.hasTelegram));
+  if (params?.search) search.set("search", params.search);
+  if (params?.fromDate) search.set("fromDate", params.fromDate);
+  if (params?.toDate) search.set("toDate", params.toDate);
+  const qs = search.toString();
+  return fetchApi(`/api/admin/broadcast/recipients${qs ? `?${qs}` : ""}`, {
+    method: "GET",
+    token: t,
+  });
+}
+
+export async function listBroadcasts(
+  params?: { page?: number; pageSize?: number },
+  token?: string | null
+): Promise<BroadcastResponse[]> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const search = new URLSearchParams();
+  if (params?.page != null) search.set("page", String(params.page));
+  if (params?.pageSize != null) search.set("pageSize", String(params.pageSize));
+  const qs = search.toString();
+  return fetchApi(`/api/admin/broadcast${qs ? `?${qs}` : ""}`, {
+    method: "GET",
+    token: t,
+  });
+}
+
+export async function createBroadcast(
+  body: { message: string; userIds: string[]; parseMode?: string; imageId?: string | null },
+  token?: string | null
+): Promise<BroadcastResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi("/api/admin/broadcast", {
+    method: "POST",
+    body: JSON.stringify(body),
+    token: t,
+  });
+}
+
+export async function getBroadcast(
+  broadcastId: string,
+  token?: string | null
+): Promise<BroadcastResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi(`/api/admin/broadcast/${encodeURIComponent(broadcastId)}`, {
+    method: "GET",
+    token: t,
+  });
+}
+
+export async function sendBroadcast(
+  broadcastId: string,
+  token?: string | null
+): Promise<BroadcastResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi(`/api/admin/broadcast/${encodeURIComponent(broadcastId)}/send`, {
+    method: "POST",
+    token: t,
+  });
+}
+
+export async function duplicateBroadcast(
+  broadcastId: string,
+  token?: string | null
+): Promise<BroadcastResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  return fetchApi(`/api/admin/broadcast/${encodeURIComponent(broadcastId)}/duplicate`, {
+    method: "POST",
+    token: t,
+  });
+}
+
+export async function uploadImage(
+  file: File,
+  token?: string | null
+): Promise<MediaImageResponse> {
+  const t = token ?? (typeof window !== "undefined" ? getAccessToken() : null);
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const headers: HeadersInit = { Accept: "application/json" };
+  if (t) {
+    (headers as Record<string, string>)["Authorization"] = `Bearer ${t}`;
+  }
+  const slug = getServiceSlug();
+  if (slug) {
+    (headers as Record<string, string>)["X-Service-Slug"] = slug;
+  }
+
+  const res = await fetch(`${baseUrl()}/api/admin/media/images`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
+  return res.json();
 }
 
 // ── Remnawave ──

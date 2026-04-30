@@ -38,6 +38,7 @@ import {
   Shield,
   Server,
   UserCog,
+  Megaphone,
 } from "lucide-react";
 import { clearTokens } from "@/lib/auth";
 import { useService } from "@/lib/service-context";
@@ -52,6 +53,7 @@ const managementItems = [
   { href: "/devices", label: "Устройства", icon: Monitor },
   { href: "/payments", label: "Платежи", icon: Receipt },
   { href: "/transactions", label: "Транзакции", icon: ArrowLeftRight },
+  { href: "/broadcasts", label: "Рассылки", icon: Megaphone },
 ];
 
 const configItems = [
