@@ -44,9 +44,9 @@ const baseUrl = () => env.backendUrl.replace(/\/$/, "");
 
 async function fetchApi<T>(
   path: string,
-  options: RequestInit & { token?: string | null } = {}
+  options: RequestInit & { token?: string | null; serviceSlug?: string | null } = {}
 ): Promise<T> {
-  const { token, ...init } = options;
+  const { token, serviceSlug, ...init } = options;
   const headers: HeadersInit = {
     Accept: "application/json",
     ...(init.headers as Record<string, string>),
@@ -57,7 +57,7 @@ async function fetchApi<T>(
   if (token) {
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
   }
-  const slug = getServiceSlug();
+  const slug = serviceSlug !== undefined ? serviceSlug : getServiceSlug();
   if (slug) {
     (headers as Record<string, string>)["X-Service-Slug"] = slug;
   }
@@ -110,10 +110,13 @@ async function fetchApi<T>(
 
 // ── Auth ──
 
+const AUTH_SERVICE_SLUG = "epn";
+
 export async function requestOtp(email: string): Promise<OtpRequestResponse> {
   return fetchApi("/api/auth/otp/request", {
     method: "POST",
     body: JSON.stringify({ email }),
+    serviceSlug: AUTH_SERVICE_SLUG,
   });
 }
 
@@ -125,6 +128,7 @@ export async function loginOtp(
   return fetchApi("/api/auth/otp/login", {
     method: "POST",
     body: JSON.stringify({ email, code, userAgent }),
+    serviceSlug: AUTH_SERVICE_SLUG,
   });
 }
 
@@ -135,6 +139,7 @@ export async function verifyTotp(
   return fetchApi("/api/auth/totp/verify", {
     method: "POST",
     body: JSON.stringify({ totpToken, code }),
+    serviceSlug: AUTH_SERVICE_SLUG,
   });
 }
 
