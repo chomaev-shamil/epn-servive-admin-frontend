@@ -34,6 +34,7 @@ import {
   getUserDailyStats,
   getDeviceStats,
   getVoucherDailyStats,
+  listVouchers,
   getWalletTopUsers,
   getBusinessMetrics,
   getTopReferrers,
@@ -44,10 +45,12 @@ import type {
   UserDayStat,
   DeviceStats,
   VoucherDayStat,
+  AdminVoucherResponse,
   AdminWalletTopUser,
   BusinessMetrics,
   TopReferrer,
 } from "@/types/admin";
+import { Progress } from "@/components/ui/progress";
 import {
   Users,
   TrendingUp,
@@ -155,6 +158,7 @@ export default function DashboardPage() {
   const [topUsers, setTopUsers] = useState<AdminWalletTopUser[] | null>(null);
   const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
   const [topReferrers, setTopReferrers] = useState<TopReferrer[] | null>(null);
+  const [allVouchers, setAllVouchers] = useState<AdminVoucherResponse[] | null>(null);
   const [error, setError] = useState("");
 
   const fetchData = useCallback(() => {
@@ -185,6 +189,7 @@ export default function DashboardPage() {
     getDeviceStats().then(setDevices).catch(() => {});
     getBusinessMetrics().then(setMetrics).catch(() => {});
     getTopReferrers({ limit: 10 }).then(setTopReferrers).catch(() => {});
+    listVouchers({ limit: 100 }).then((res) => setAllVouchers(res.results)).catch(() => {});
   }, [fetchData]);
 
   const paymentsTotals = useMemo(() => {
@@ -633,6 +638,77 @@ export default function DashboardPage() {
                         <td className="py-2 text-right">{ref.invitedWithTopupCount}</td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Нет данных</p>
+            )
+          ) : (
+            <Skeleton className="h-[200px] w-full" />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Voucher usage table */}
+      <Card className="shadow-sm">
+        <CardHeader className="flex flex-row items-center gap-2 pb-2">
+          <Ticket className="size-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Использование промокодов</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {allVouchers ? (
+            allVouchers.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full table-fixed text-sm">
+                  <colgroup>
+                    <col className="w-10" />
+                    <col />
+                    <col className="w-24" />
+                    <col className="w-56" />
+                    <col className="w-24" />
+                  </colgroup>
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-2 font-medium">#</th>
+                      <th className="pb-2 font-medium">Промокод</th>
+                      <th className="pb-2 font-medium text-right pr-4">Сумма</th>
+                      <th className="pb-2 font-medium">Использовано</th>
+                      <th className="pb-2 font-medium text-center">Статус</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allVouchers
+                      .slice()
+                      .sort((a, b) => b.used_count - a.used_count)
+                      .map((v, i) => {
+                        const pct = v.max_uses > 0 ? (v.used_count / v.max_uses) * 100 : 0;
+                        return (
+                          <tr key={v.id ?? v.code} className="border-b last:border-0">
+                            <td className="py-2 text-muted-foreground">{i + 1}</td>
+                            <td className="py-2 font-mono text-xs truncate">{v.code}</td>
+                            <td className="py-2 text-right font-medium pr-4">{formatAmount(v.amount)} ₽</td>
+                            <td className="py-2">
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span>{v.used_count} / {v.max_uses}</span>
+                                <span className="text-muted-foreground">{pct.toFixed(1)}%</span>
+                              </div>
+                              <Progress value={pct} className="h-2" />
+                            </td>
+                            <td className="py-2 text-center">
+                              <span
+                                className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                                  v.is_active
+                                    ? "bg-emerald-50 text-emerald-700"
+                                    : "bg-gray-100 text-gray-500"
+                                }`}
+                              >
+                                {v.is_active ? "Активен" : "Неактивен"}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               </div>
